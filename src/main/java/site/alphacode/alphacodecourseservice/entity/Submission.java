@@ -1,14 +1,12 @@
 package site.alphacode.alphacodecourseservice.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import site.alphacode.alphacodecourseservice.baseentity.BaseEntity;
+import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.util.UUID;
 
@@ -31,8 +29,10 @@ public class Submission extends BaseEntity {
     @Column(name = "video_url", length = 255)
     private String videoUrl;
 
-    @NotBlank(message = "Account Lesson ID không được để trống")
     @Column(name = "account_lesson_id", nullable = false, columnDefinition = "uuid")
     private UUID accountLessonId;
-}
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_lesson_id", insertable = false, updatable = false)
+    private AccountLesson accountLesson;
+}

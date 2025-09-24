@@ -7,7 +7,7 @@ public class SecurityWhitelist {
 
     // Permit all methods
     public static final String[] GENERAL_WHITELIST = {
-            "/v1/api-docs/**",
+            "/v3/api-docs/**",
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/swagger",

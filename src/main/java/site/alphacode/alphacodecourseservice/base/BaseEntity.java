@@ -1,4 +1,4 @@
-package site.alphacode.alphacodecourseservice.baseentity;
+package site.alphacode.alphacodecourseservice.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

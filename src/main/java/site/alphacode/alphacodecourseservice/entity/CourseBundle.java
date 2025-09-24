@@ -1,13 +1,12 @@
 package site.alphacode.alphacodecourseservice.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import site.alphacode.alphacodecourseservice.baseentity.BaseEntity;
+import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.util.UUID;
 
@@ -28,11 +27,9 @@ public class CourseBundle extends BaseEntity {
     @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
-    @NotNull(message = "Course ID là bắt buộc")
     @Column(name = "course_id", nullable = false, columnDefinition = "uuid")
     private UUID courseId;
 
-    @NotNull(message = "Bundle ID là bắt buộc")
     @Column(name = "bundle_id", nullable = false, columnDefinition = "uuid")
     private UUID bundleId;
 
@@ -44,4 +41,3 @@ public class CourseBundle extends BaseEntity {
     @JoinColumn(name = "bundle_id", insertable = false, updatable = false)
     private Bundle bundle;
 }
-

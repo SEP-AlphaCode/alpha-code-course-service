@@ -36,7 +36,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       }
 
       @Override
-      @Cacheable(value = "account_lesson_with_lesson", key = "#accountLessonId")
+      @Cacheable(value = "account_lesson_with_lesson", key = "{#accountLessonId}")
       public Optional<AccountLessonWithLesson> getAccountLessionWithLessonById(UUID accountLessonId) {
             var accountLesson = accountLessonRepository.findById(accountLessonId);
             if (accountLesson.isEmpty()) {

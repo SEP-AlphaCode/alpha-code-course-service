@@ -14,7 +14,7 @@ public class BaseEntityDto {
     private LocalDateTime createdDate;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime lastUpdate;
+    private LocalDateTime lastUpdated;
 
     @NotNull(message = "Trạng thái không được để trống")
     private Integer status;

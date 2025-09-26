@@ -30,15 +30,19 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     private final LessonRepository lessonRepository;
 
     @Override
-    @Cacheable(value = "account_course", key = "#accountCourseId")
+    @Transactional
+    @CachePut(value = "account_course", key = "{#accountCourseId}")
     public AccountCourseDto getAccountCourseById(UUID accountCourseId) {
+        // update last accessed
         repository.updateLastAccessed(accountCourseId, LocalDateTime.now());
-        var accountCourse = repository.findById(accountCourseId).orElse(null);
+        var accountCourse = repository.findById(accountCourseId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + accountCourseId));
         return AccountCourseMapper.toDto(accountCourse);
     }
 
     @Override
     @Transactional
+    @CachePut(value = "account_course", key = "{#result.id}")
     @CacheEvict(value = "account_courses", allEntries = true)
     public AccountCourseDto create(CreateAccountCourse createAccountCourse) {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
@@ -54,19 +58,20 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         accountCourse.setCompleted(false);
         accountCourse.setProgressPercent(0);
         accountCourse.setTotalLesson(lessonRepository.countByCourseId(createAccountCourse.getCourseId()));
+
         accountCourse = repository.save(accountCourse);
         return AccountCourseMapper.toDto(accountCourse);
     }
 
     @Override
     @Transactional
-    @CachePut(value = "account_course", key = "#id")
+    @CachePut(value = "account_course", key = "{#id}")
     @CacheEvict(value = "account_courses", allEntries = true)
     public AccountCourseDto update(UUID id, AccountCourseDto dto) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
 
-        // Map tất cả trường từ DTO sang entity hiện tại (trừ id)
+        // Map từ DTO sang entity
         AccountCourseMapper.updateEntityFromDto(dto, accountCourse);
 
         // Cập nhật lastAccessed
@@ -78,36 +83,33 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CachePut(value = "account_course", key = "#id")
+    @CachePut(value = "account_course", key = "{#id}")
     @CacheEvict(value = "account_courses", allEntries = true)
     public AccountCourseDto patchUpdate(UUID id, AccountCourseDto dto) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
 
-        if(dto.getCompleted()) {
+        if (dto.getCompleted()) {
             dto.setProgressPercent(100);
             dto.setCompletedLesson(accountCourse.getTotalLesson());
         }
 
-        if(dto.getCompletedLesson() != null){
+        if (dto.getCompletedLesson() != null) {
             accountCourse.setCompletedLesson(dto.getCompletedLesson());
         }
 
-        if(dto.getProgressPercent() != null){
+        if (dto.getProgressPercent() != null) {
             accountCourse.setProgressPercent(dto.getProgressPercent());
         }
 
-        // Cập nhật lastAccessed
         accountCourse.setLastAccessed(LocalDateTime.now());
 
         accountCourse = repository.save(accountCourse);
         return AccountCourseMapper.toDto(accountCourse);
     }
 
-
-
     @Override
-    @Cacheable(value = "account_courses", key = "{#accountCourseId, #page, #size}")
+    @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
     public List<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<AccountCourse> pageResult = repository.findByAccountId(accountId, pageable);
@@ -119,12 +121,10 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    @CacheEvict(value = "account_course", key = "{#id}")
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
-        if(accountCourse != null){
-            repository.softDeleteById(id);
-        }
+        repository.softDeleteById(accountCourse.getId());
     }
 }

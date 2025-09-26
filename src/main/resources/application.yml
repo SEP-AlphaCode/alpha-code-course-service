@@ -24,6 +24,9 @@ logging:
       io: INFO
 
 spring:
+  devtools:
+    restart:
+      exclude: site/alphacode/alphacodecourseservice/dto/**
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}

@@ -45,7 +45,7 @@ public class Lesson extends BaseEntity {
     private Boolean requireRobot = false;
 
     @Type(JsonType.class)
-    @Column(name = "solution", nullable = false)
+    @Column(name = "solution", columnDefinition = "jsonb", nullable = false)
     private JsonNode solution;
 
     @Column(name = "order_number", nullable = false)

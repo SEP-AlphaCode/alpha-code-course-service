@@ -11,13 +11,14 @@ import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.AccountCourseEnum;
 import site.alphacode.alphacodecourseservice.enums.CategoryEnum;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CategoryDto extends BaseEntityDto {
+public class CategoryDto extends BaseEntityDto implements Serializable {
     private UUID id;
 
     @NotBlank(message = "Tên danh mục là bắt buộc")

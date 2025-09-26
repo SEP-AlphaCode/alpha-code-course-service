@@ -10,11 +10,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.CategoryDto;
+import site.alphacode.alphacodecourseservice.dto.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCategory;
+import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCategory;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCategory;
 import site.alphacode.alphacodecourseservice.service.CategoryService;
-import site.alphacode.alphacodecourseservice.validation.OnPut;
-
 import java.util.UUID;
 
 @RestController
@@ -24,11 +24,34 @@ import java.util.UUID;
 public class CategoryController {
     private final CategoryService categoryService;
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Get category by id")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public CategoryDto getCategoryById(@PathVariable UUID id) {
+        return categoryService.getCategoryById(id);
+    }
+
+    @GetMapping("/get-by-slug/{slug}")
+    @Operation(summary = "Get category by slug")
+    public CategoryDto getCategoryBySlug(@PathVariable String slug) {
+        return categoryService.getCategoryBySlug(slug);
+    }
+
+    @GetMapping
+    @Operation(summary = "Get list of categories with paging & search")
+    public PagedResult<CategoryDto> getAllCategories(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search
+    ) {
+        return categoryService.getCategories(page, size, search);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create predefined category")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public CategoryDto createCategory(
-            @Validated @ModelAttribute CreateCategory createCategory) {
+            @Valid @ModelAttribute CreateCategory createCategory) {
         return categoryService.create(createCategory);
     }
 
@@ -37,7 +60,7 @@ public class CategoryController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public CategoryDto updateCategory(
             @PathVariable UUID id,
-            @Validated(OnPut.class) @ModelAttribute UpdateCategory updateCategory) {
+            @Valid @ModelAttribute UpdateCategory updateCategory) {
         return categoryService.update(id, updateCategory);
     }
 
@@ -46,13 +69,13 @@ public class CategoryController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public CategoryDto patchCategory(
             @PathVariable UUID id,
-            @ModelAttribute UpdateCategory updateCategory) {
-        return categoryService.patch(id, updateCategory);
+            @Valid @ModelAttribute PatchCategory patchCategory) {
+        return categoryService.patch(id, patchCategory);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete category by id")
-    @PreAuthorize("hasAuthority('ROLE_Admin')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable UUID id) {
         categoryService.delete(id);

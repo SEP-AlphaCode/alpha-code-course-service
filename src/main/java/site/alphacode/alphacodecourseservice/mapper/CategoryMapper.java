@@ -12,7 +12,7 @@ public class CategoryMapper {
         dto.setName(category.getName());
         dto.setDescription(category.getDescription());
         dto.setCreatedDate(category.getCreatedDate());
-        dto.setLastUpdate(category.getLastUpdated());
+        dto.setLastUpdated(category.getLastUpdated());
         dto.setSlug(category.getSlug());
         dto.setImageUrl(category.getImageUrl());
         dto.setStatus(category.getStatus());
@@ -27,7 +27,7 @@ public class CategoryMapper {
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
         category.setCreatedDate(dto.getCreatedDate());
-        category.setLastUpdated(dto.getLastUpdate());
+        category.setLastUpdated(dto.getLastUpdated());
         category.setSlug(dto.getSlug());
         category.setImageUrl(dto.getImageUrl());
         category.setStatus(dto.getStatus());

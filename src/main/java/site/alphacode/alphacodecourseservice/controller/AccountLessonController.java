@@ -20,9 +20,9 @@ import java.util.UUID;
 public class AccountLessonController {
     private final AccountLessonService accountLessonService;
 
-    @GetMapping
+    @GetMapping("/{id}")
     @Operation(summary = "Get account course by id")
-    public Optional<AccountLessonWithLesson> getAccountLessonWithLesson(@PathVariable UUID accountLessonId) {
-        return accountLessonService.getAccountLessionWithLessonById(accountLessonId);
+    public Optional<AccountLessonWithLesson> getAccountLessonWithLesson(@PathVariable UUID id) {
+        return accountLessonService.getAccountLessionWithLessonById(id);
     }
 }

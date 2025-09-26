@@ -1,4 +1,4 @@
-package site.alphacode.alphacodecourseservice.dto;
+package site.alphacode.alphacodecourseservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

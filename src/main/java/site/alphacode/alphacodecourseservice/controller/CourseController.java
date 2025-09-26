@@ -6,10 +6,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import site.alphacode.alphacodecourseservice.dto.CourseDto;
-import site.alphacode.alphacodecourseservice.dto.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourse;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourse;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourse;
@@ -20,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/courses")
 @RequiredArgsConstructor
-@Tag(name = "Courses")
+@Tag(name = "Courses", description = "Course management APIs")
 public class CourseController {
     private final CourseService courseService;
 

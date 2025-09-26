@@ -1,7 +1,7 @@
 package site.alphacode.alphacodecourseservice.service;
 
-import site.alphacode.alphacodecourseservice.dto.CourseDto;
-import site.alphacode.alphacodecourseservice.dto.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourse;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourse;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourse;

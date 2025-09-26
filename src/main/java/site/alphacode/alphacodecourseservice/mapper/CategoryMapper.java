@@ -1,6 +1,6 @@
 package site.alphacode.alphacodecourseservice.mapper;
 
-import site.alphacode.alphacodecourseservice.dto.CategoryDto;
+import site.alphacode.alphacodecourseservice.dto.response.CategoryDto;
 import site.alphacode.alphacodecourseservice.entity.Category;
 
 public class CategoryMapper {

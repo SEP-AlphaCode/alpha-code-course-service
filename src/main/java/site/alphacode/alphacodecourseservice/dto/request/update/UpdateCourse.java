@@ -16,6 +16,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class UpdateCourse {
+    @NotNull(message = "Id khóa học là bắt buộc")
+    private UUID id;
+
     @NotBlank(message = "Tên khóa học là bắt buộc")
     @Size(max = 255, message = "Tên khóa học không được vượt quá 255 ký tự")
     private String name;

@@ -7,14 +7,15 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import site.alphacode.alphacodecourseservice.dto.CourseDto;
-import site.alphacode.alphacodecourseservice.dto.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourse;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourse;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourse;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.exception.BadRequestException;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
+import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.CourseMapper;
 import site.alphacode.alphacodecourseservice.repository.CategoryRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
@@ -36,8 +37,8 @@ public class CourseServiceImplement implements CourseService {
     @Cacheable(value = "course", key = "#id")
     public CourseDto getActiveCourseById(UUID id) {
         var entity = courseRepository.findActiveCourseById(id);
-        if(entity == null) {
-            throw new ConflictException("Khóa học với id " + id + " không tồn tại.");
+        if(entity.isEmpty()) {
+            throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
         return CourseMapper.toDto(entity.get());
     }
@@ -46,8 +47,8 @@ public class CourseServiceImplement implements CourseService {
     @Cacheable(value = "course", key = "#slug")
     public CourseDto getActiveCourseBySlug(String slug) {
         var entity = courseRepository.findActiveCourseBySlug(slug);
-        if(entity == null) {
-            throw new ConflictException("Khóa học với slug " + slug + " không tồn tại.");
+        if(entity.isEmpty()) {
+            throw new ResourceNotFoundException("Khóa học với slug " + slug + " không tồn tại.");
         }
         return CourseMapper.toDto(entity.get());
     }
@@ -66,22 +67,21 @@ public class CourseServiceImplement implements CourseService {
     @CacheEvict(value = "courses_list", allEntries = true)
     public CourseDto create(CreateCourse createCourse) {
         if (courseRepository.existsByName(createCourse.getName())) {
-            throw new ConflictException("Khóa học với tên " + createCourse.getName() + " đã tồn tại.");
+            throw new ResourceNotFoundException("Khóa học với tên " + createCourse.getName() + " đã tồn tại.");
         }
 
-        if(categoryRepository.findNoneDeleteCategoryById(createCourse.getCategoryId()) == null) {
-            throw new ConflictException("Danh mục với id " + createCourse.getCategoryId() + " không tồn tại.");
+        if(categoryRepository.findNoneDeleteCategoryById(createCourse.getCategoryId()).isEmpty()) {
+            throw new ResourceNotFoundException("Danh mục với id " + createCourse.getCategoryId() + " không tồn tại.");
         }
 
         Course course = new Course();
         course.setCategoryId(createCourse.getCategoryId());
         course.setDescription(createCourse.getDescription());
-        course.setLevel(Integer.valueOf(createCourse.getLevel()));
+        course.setLevel(createCourse.getLevel());
         course.setName(createCourse.getName());
         course.setPrice(createCourse.getPrice());
         course.setRequireLicense(createCourse.getRequireLicense());
         course.setSlug(SlugHelper.toSlug(createCourse.getName()));
-        course.setTotalDuration(0);
         course.setTotalDuration(0);
         course.setCreatedDate(LocalDateTime.now());
         course.setLastUpdated(null);
@@ -107,7 +107,7 @@ public class CourseServiceImplement implements CourseService {
     public CourseDto update(UUID id, UpdateCourse updateCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if(existing.isEmpty()) {
-            throw new ConflictException("Khóa học với id " + id + " không tồn tại.");
+            throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
 
         if (courseRepository.existsByName(updateCourse.getName())) {
@@ -115,7 +115,7 @@ public class CourseServiceImplement implements CourseService {
         }
 
         if(categoryRepository.findNoneDeleteCategoryById(updateCourse.getCategoryId()).isEmpty()) {
-            throw new ConflictException("Danh mục với id " + updateCourse.getCategoryId() + " không tồn tại.");
+            throw new ResourceNotFoundException("Danh mục với id " + updateCourse.getCategoryId() + " không tồn tại.");
         }
 
         existing.get().setCategoryId(updateCourse.getCategoryId());
@@ -158,7 +158,7 @@ public class CourseServiceImplement implements CourseService {
     public CourseDto patchUpdate(UUID id, PatchCourse patchCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if (existing.isEmpty()) {
-            throw new ConflictException("Khóa học với id " + id + " không tồn tại.");
+            throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
 
         if (patchCourse.getName() != null && !patchCourse.getName().isBlank()
@@ -169,7 +169,7 @@ public class CourseServiceImplement implements CourseService {
 
         if (patchCourse.getCategoryId() != null
                 && categoryRepository.findNoneDeleteCategoryById(patchCourse.getCategoryId()).isEmpty()) {
-            throw new ConflictException("Danh mục với id " + patchCourse.getCategoryId() + " không tồn tại.");
+            throw new ResourceNotFoundException("Danh mục với id " + patchCourse.getCategoryId() + " không tồn tại.");
         }
 
         if (patchCourse.getCategoryId() != null) {
@@ -223,7 +223,7 @@ public class CourseServiceImplement implements CourseService {
     public void delete(UUID id) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if(existing.isEmpty()) {
-            throw new ConflictException("Khóa học với id " + id + " không tồn tại.");
+            throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
         existing.get().setStatus(0); // set trạng thái xóa mềm
         existing.get().setLastUpdated(LocalDateTime.now());

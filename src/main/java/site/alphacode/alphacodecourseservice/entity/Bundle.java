@@ -34,6 +34,12 @@ public class Bundle extends BaseEntity {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "discount_price", precision = 10, scale = 2)
+    private BigDecimal discountPrice;
+
+    @Column(name = "cover_image", length = 512)
+    private String coverImage;
+
 
     @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<CourseBundle> courseBundles;

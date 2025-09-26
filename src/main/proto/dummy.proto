@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package dummy;
+
+// File tạm để tránh lỗi NO SOURCES
+message Empty {}

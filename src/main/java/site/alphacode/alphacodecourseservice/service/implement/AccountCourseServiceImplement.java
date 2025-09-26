@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import site.alphacode.alphacodecourseservice.dto.AccountCourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;

@@ -29,13 +29,10 @@ public class Lesson extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "content_url", length = 500)
-    private String contentUrl;
-
     @Column(name = "content_type", length = 100, nullable = false)
     private String contentType;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "duration", nullable = false)

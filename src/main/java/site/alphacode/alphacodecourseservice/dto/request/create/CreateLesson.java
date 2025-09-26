@@ -1,25 +1,28 @@
-package site.alphacode.alphacodecourseservice.dto;
+package site.alphacode.alphacodecourseservice.dto.request.create;
 
-import jakarta.validation.constraints.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
+import org.hibernate.annotations.Type;
+
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LessonDto extends BaseEntityDto {
-    private String id;
+public class CreateLesson {
 
     @NotBlank(message = "Tiêu đề bài học là bắt buộc")
     @Size(max = 255, message = "Tiêu đề bài học không được vượt quá 255 ký tự")
     private String title;
-
-    @Size(max = 500, message = "Đường dẫn nội dung không được vượt quá 500 ký tự")
-    private String contentUrl;
 
     @NotBlank(message = "Loại nội dung là bắt buộc")
     @Size(max = 100, message = "Loại nội dung không được vượt quá 100 ký tự")
@@ -32,9 +35,11 @@ public class LessonDto extends BaseEntityDto {
     private Integer duration;
 
     @NotNull(message = "Trạng thái yêu cầu robot là bắt buộc")
-    private Boolean requireRobot = false;
+    private Boolean requireRobot;
 
     @NotNull(message = "Course ID là bắt buộc")
-    private String courseId;
-}
+    private UUID courseId;
 
+    @NotNull(message = "Dữ liệu giải pháp là bắt buộc")
+    private JsonNode solution;
+}

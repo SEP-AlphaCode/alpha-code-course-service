@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import site.alphacode.alphacodecourseservice.dto.AccountCourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 

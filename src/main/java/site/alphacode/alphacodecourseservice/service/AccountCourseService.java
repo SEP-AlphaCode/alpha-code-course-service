@@ -1,6 +1,6 @@
 package site.alphacode.alphacodecourseservice.service;
 
-import site.alphacode.alphacodecourseservice.dto.AccountCourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package site.alphacode.alphacodecourseservice.mapper;
 
-import site.alphacode.alphacodecourseservice.dto.CourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
 import site.alphacode.alphacodecourseservice.entity.Course;
 
 public class CourseMapper {

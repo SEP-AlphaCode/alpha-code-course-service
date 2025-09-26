@@ -1,6 +1,6 @@
 package site.alphacode.alphacodecourseservice.mapper;
 
-import site.alphacode.alphacodecourseservice.dto.AccountLessonDto;
+import site.alphacode.alphacodecourseservice.dto.response.AccountLessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
 import site.alphacode.alphacodecourseservice.entity.AccountLesson;
 import site.alphacode.alphacodecourseservice.entity.Lesson;

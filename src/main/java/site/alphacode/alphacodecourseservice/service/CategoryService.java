@@ -1,7 +1,7 @@
 package site.alphacode.alphacodecourseservice.service;
 
-import site.alphacode.alphacodecourseservice.dto.CategoryDto;
-import site.alphacode.alphacodecourseservice.dto.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.CategoryDto;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCategory;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCategory;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCategory;

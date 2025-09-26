@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  alpha-course-service:
+    build: .
+    container_name: alpha-course-service
+    ports:
+      - "8091:8091"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - traefik-network
+
+networks:
+  traefik-network:
+    external: true

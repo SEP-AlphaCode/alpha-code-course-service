@@ -1,7 +1,6 @@
-package site.alphacode.alphacodecourseservice.dto;
+package site.alphacode.alphacodecourseservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,7 +39,7 @@ public class CourseDto extends BaseEntityDto implements Serializable {
 
     private UUID categoryId;
 
-    @JsonProperty(value = "statusText", access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty(value = "statusText")
     public String getStatusText() {
         return AccountCourseEnum.fromCode(this.getStatus());
     }

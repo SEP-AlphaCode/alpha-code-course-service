@@ -7,10 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import site.alphacode.alphacodecourseservice.dto.CategoryDto;
-import site.alphacode.alphacodecourseservice.dto.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.CategoryDto;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCategory;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCategory;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCategory;
@@ -20,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
-@Tag(name = "Categories")
+@Tag(name = "Categories", description = "Category management APIs")
 public class CategoryController {
     private final CategoryService categoryService;
 

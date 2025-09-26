@@ -25,14 +25,15 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             Pageable pageable
     );
 
-    @Query("SELECT c FROM Course c WHERE c.status <> 0")
-    boolean existsByName(String name);
+    @Query("SELECT c FROM Course c WHERE c.name = :name AND c.status <> 0")
+    boolean existsByName(@Param("name") String name);
 
-    Optional<Course> findActiveCourseById(UUID id);
+    @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status == 1")
+    Optional<Course> findActiveCourseById(@Param("id") UUID id);
 
     @Query("SELECT c FROM Course c WHERE c.slug = :slug AND c.status == 1")
-    Optional<Course> findActiveCourseBySlug(String slug);
+    Optional<Course> findActiveCourseBySlug(@Param("slug") String slug);
 
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status <> 0")
-    Optional<Course>  findNoneDeleteCourseById(UUID id);
+    Optional<Course>  findNoneDeleteCourseById(@Param("id") UUID id);
 }

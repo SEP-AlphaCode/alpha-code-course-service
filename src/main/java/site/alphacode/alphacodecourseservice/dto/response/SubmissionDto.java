@@ -1,4 +1,4 @@
-package site.alphacode.alphacodecourseservice.dto;
+package site.alphacode.alphacodecourseservice.dto.response;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

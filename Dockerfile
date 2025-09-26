@@ -1,31 +1,28 @@
 # Stage 1: Build với Maven
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-24-alpine AS build
 
 WORKDIR /app
 
+# Copy pom.xml trước để cache dependency
 COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source
 COPY src ./src
 
+# Build jar, skip tests
 RUN mvn clean package -DskipTests
 
-# Stage 2: Chạy ứng dụng với JDK
-FROM eclipse-temurin:17-jdk-alpine
+# Stage 2: Run ứng dụng với JDK
+FROM eclipse-temurin:24-jdk-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/target/alpha-code-course-service-0.0.1-SNAPSHOT.jar ./app.jar
+# Copy jar từ stage build
+COPY --from=build /app/target/alpha-code-course-service-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8091
+# Port service (thay theo app config của bạn)
+EXPOSE 8084
 
-ENTRYPOINT ["java", "-jar", "app.jar"]# Dockerfile for alpha-code-course-service
-FROM eclipse-temurin:17-jdk-alpine
-
-WORKDIR /app
-
-COPY . /app
-
-RUN ./mvnw clean package -DskipTests
-
-EXPOSE 8091
-
-CMD ["java", "-jar", "target/alpha-code-course-service-0.0.1-SNAPSHOT.jar"]
+# Run app
+ENTRYPOINT ["java", "-jar", "app.jar"]

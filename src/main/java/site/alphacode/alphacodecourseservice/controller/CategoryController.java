@@ -46,6 +46,17 @@ public class CategoryController {
         return categoryService.getCategories(page, size, search);
     }
 
+    @GetMapping("/none-delete")
+    @Operation(summary = "Get list of none-deleted categories with paging & search")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public PagedResult<CategoryDto> getAllNoneDeleteCategories(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search
+    ) {
+        return categoryService.getNoneDeleteCategories(page, size, search);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create predefined category")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")

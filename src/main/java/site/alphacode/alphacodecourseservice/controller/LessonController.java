@@ -10,6 +10,7 @@ import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
 import site.alphacode.alphacodecourseservice.dto.response.LessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.LessonWithSolution;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.service.LessonService;
 
 import java.util.UUID;
@@ -25,6 +26,19 @@ public class LessonController {
     @Operation(summary = "Get active lesson by id")
     public LessonDto getById(@PathVariable UUID id) {
         return lessonService.getLessonById(id);
+    }
+
+    @GetMapping("/get-by-course/{courseId}")
+    @Operation(summary = "Get all active lessons by course id")
+    public PagedResult<LessonDto> getActiveLessonsByCourseId(@PathVariable UUID courseId, Integer page, Integer size) {
+        return lessonService.getActiveLessonsByCourseId(courseId, page, size);
+    }
+
+    @GetMapping("/all-with-solution-by-course/{courseId}")
+    @Operation(summary = "Get all lessons with solutions by course id (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionsByCourseId(@PathVariable UUID courseId, Integer page, Integer size) {
+        return lessonService.getAllLessonsWithSolutionByCourseId(courseId, page, size);
     }
 
     @GetMapping("/with-solution/{id}")

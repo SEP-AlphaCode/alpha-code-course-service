@@ -5,12 +5,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
 import site.alphacode.alphacodecourseservice.dto.response.LessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.LessonWithSolution;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.entity.Lesson;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
@@ -42,6 +47,34 @@ public class LessonServiceImplement implements LessonService {
     }
 
     @Override
+    @Cacheable(value = "lessons_list", key = "{#courseId, #page, #size}")
+    public PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size) {
+        var course = courseRepository.findActiveCourseById(courseId);
+        if (course.isEmpty()) {
+            throw new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại.");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        var pagedLessons = lessonRepository.findAllActiveLessonsByCourseId(courseId, pageable);
+        return new PagedResult<>(pagedLessons.map(LessonMapper::toDto));
+    }
+
+    @Override
+    @Cacheable(value = "lessons_with_solution_list", key = "{#courseId, #page, #size}")
+    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionByCourseId(UUID courseId, int page, int size) {
+        var course = courseRepository.findNoneDeleteCourseById(courseId);
+        if (course.isEmpty()) {
+            throw new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại.");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
+
+        var pagedLessons = lessonRepository.findAllLessonWithSolutionByCourseId(courseId, pageable);
+        return new PagedResult<>(pagedLessons.map(LessonMapper::toLessonWithSolution));
+    }
+
+    @Override
     @Cacheable(value = "lesson_with_solution", key = "#id")
     public LessonWithSolution getLessonWithSolutionById(UUID id) {
         var lesson = lessonRepository.findById(id);
@@ -55,10 +88,14 @@ public class LessonServiceImplement implements LessonService {
     @Override
     @Transactional
     @CachePut(value = "lesson", key = "{#result.id}")
-    @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    })
     public LessonWithSolution create (CreateLesson createLesson){
         var lesson = lessonRepository.findByTitle(createLesson.getTitle());
-        if (!lesson.isEmpty()) {
+        if (lesson.isPresent()) {
             throw new ConflictException("Tiêu đề bài học đã tồn tại.");
         }
         Course course = courseRepository.findNoneDeleteCourseById(createLesson.getCourseId())
@@ -96,7 +133,11 @@ public class LessonServiceImplement implements LessonService {
     @Override
     @Transactional
     @CachePut(value = "lesson", key = "{#lessonId}")
-    @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    })
     public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -144,7 +185,11 @@ public class LessonServiceImplement implements LessonService {
     @Override
     @Transactional
     @CachePut(value = "lesson", key = "{#lessonId}")
-    @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    })
     public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -206,7 +251,12 @@ public class LessonServiceImplement implements LessonService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"lesson", "lesson_with_solution"}, key = "#lessonId", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "lesson", key = "{#lessonId}"),
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+    })
     public void delete(UUID lessonId) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException(

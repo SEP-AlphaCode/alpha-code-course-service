@@ -36,11 +36,26 @@ public class CourseController {
         return courseService.getAllActiveCourses(page, size, search);
     }
 
+    @GetMapping("/none-delete")
+    @Operation(summary = "Get all none delete courses with pagination and optional search filter")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public PagedResult<CourseDto> getAllNoneDeleteCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search) {
+        return courseService.getNoneDeleteCourses(page, size, search);
+    }
+
     @GetMapping("/get-by-slug/{slug}")
     @Operation(summary = "Get active course by slug")
     public CourseDto getActiveCourseBySlug(@PathVariable String slug) {
         return courseService.getActiveCourseBySlug(slug);
     }
+
+    @GetMapping("/none-delete/{id}")
+    @Operation(summary = "Get none delete course by id")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public CourseDto getNoneDeleteCourseById(@PathVariable UUID id) {
+        return courseService.getNoneDeleteCourseById(id);
+    }
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.AccountCourseEnum;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class CourseDto extends BaseEntityDto implements Serializable {
     private UUID id;
 

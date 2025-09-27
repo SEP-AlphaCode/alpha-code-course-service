@@ -20,7 +20,7 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("""
        SELECT c FROM Category c
-       WHERE c.status == 1
+       WHERE c.status = 1
          AND (:searchTerm IS NULL OR :searchTerm = '' 
               OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
               OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
@@ -31,12 +31,25 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
             Pageable pageable
     );
 
-    @Query("SELECT c FROM Category c WHERE c.id = :id AND c.status == 1")
+    @Query("""
+       SELECT c FROM Category c
+       WHERE c.status <> 0
+         AND (:searchTerm IS NULL OR :searchTerm = '' 
+              OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+              OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+       ORDER BY c.createdDate DESC
+       """)
+    Page<Category> findNoneDeleteCategories(
+            @Param("searchTerm") String searchTerm,
+            Pageable pageable
+    );
+
+    @Query("SELECT c FROM Category c WHERE c.id = :id AND c.status = 1")
     Optional<Category> findActiveCategoryById(@Param("id") UUID id);
 
     @Query("SELECT c FROM Category c WHERE c.id = :id AND c.status <> 0")
     Optional<Category> findNoneDeleteCategoryById(@Param("id") UUID id);
 
-    @Query("SELECT c FROM Category c WHERE c.slug = :slug AND c.status == 1")
+    @Query("SELECT c FROM Category c WHERE c.slug = :slug AND c.status = 1")
     Optional<Category> findActiveCategoryBySlug(@Param("slug") String slug);
 }

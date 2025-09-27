@@ -3,12 +3,17 @@ package site.alphacode.alphacodecourseservice.base;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Data
-@MappedSuperclass
+@SuperBuilder
+@NoArgsConstructor     // ✅ bắt buộc cho @SuperBuilder
+@AllArgsConstructor
 public class BaseEntityDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdDate;

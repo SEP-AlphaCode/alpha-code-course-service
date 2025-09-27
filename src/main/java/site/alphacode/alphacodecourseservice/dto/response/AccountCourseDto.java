@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.enums.AccountCourseEnum;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class AccountCourseDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private UUID id;

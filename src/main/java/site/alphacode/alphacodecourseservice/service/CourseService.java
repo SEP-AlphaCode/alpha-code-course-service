@@ -16,4 +16,6 @@ public interface CourseService {
     CourseDto update(UUID id, UpdateCourse updateCourse);
     CourseDto patchUpdate(UUID id, PatchCourse patchCourse);
     void delete(UUID id);
+    CourseDto getNoneDeleteCourseById(UUID id);
+    PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search);
 }

@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface CategoryService {
     CategoryDto getCategoryById(UUID id);
     PagedResult<CategoryDto> getCategories(int page, int size, String search);
+    PagedResult<CategoryDto> getNoneDeleteCategories(int page, int size, String search);
     CategoryDto update(UUID id, UpdateCategory updateCategory);
     CategoryDto create(CreateCategory createCategory);
     CategoryDto patch(UUID id, PatchCategory patchCategory);

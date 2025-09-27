@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
@@ -54,6 +55,16 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
+    @Cacheable(value = "none_delete_course", key = "#id")
+    public CourseDto getNoneDeleteCourseById(UUID id) {
+        var entity = courseRepository.findNoneDeleteCourseById(id);
+        if(entity.isEmpty()) {
+            throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
+        }
+        return CourseMapper.toDto(entity.get());
+    }
+
+    @Override
     @Cacheable(value = "courses_list", key = "{#page, #size, #search}")
     public PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
@@ -62,9 +73,22 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
+    @Cacheable(value = "all_courses_list", key = "{#page, #size, #search}")
+    public PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        Page<Course> course = courseRepository.findNoneDeleteCourses(search, pageable);
+        return new PagedResult<>(course.map(CourseMapper::toDto));
+    }
+
+    @Override
     @Transactional
     @CachePut(value = "course", key = "{#result.id}") // thêm mới thì put vào cache theo id
-    @CacheEvict(value = "courses_list", allEntries = true)
+    @Caching(
+            evict = {
+            @CacheEvict(value = "none_delete_course", allEntries = true),
+            @CacheEvict(value = "all_courses_list", allEntries = true),
+            @CacheEvict(value = "courses_list", allEntries = true)
+    })
     public CourseDto create(CreateCourse createCourse) {
         if (courseRepository.existsByName(createCourse.getName())) {
             throw new ResourceNotFoundException("Khóa học với tên " + createCourse.getName() + " đã tồn tại.");
@@ -103,7 +127,11 @@ public class CourseServiceImplement implements CourseService {
     @Override
     @Transactional
     @CachePut(value = "course", key = "#id")
-    @CacheEvict(value = "courses_list", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "none_delete_course", allEntries = true),
+            @CacheEvict(value = "all_courses_list", allEntries = true),
+            @CacheEvict(value = "courses_list", allEntries = true)
+    })
     public CourseDto update(UUID id, UpdateCourse updateCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if(existing.isEmpty()) {
@@ -144,7 +172,7 @@ public class CourseServiceImplement implements CourseService {
         } else if (updateCourse.getImageUrl() != null && !updateCourse.getImageUrl().isBlank()) {
             existing.get().setImageUrl(updateCourse.getImageUrl());
         } else {
-            throw new BadRequestException("PUT category phải có ảnh (image file hoặc imageUrl)");
+            throw new BadRequestException("Chỉnh sửa gói phải có ảnh (image file hoặc imageUrl)");
         }
 
         Course savedEntity = courseRepository.save(existing.get());
@@ -154,7 +182,11 @@ public class CourseServiceImplement implements CourseService {
     @Override
     @Transactional
     @CachePut(value = "course", key = "#id")
-    @CacheEvict(value = "courses_list", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "none_delete_course", allEntries = true),
+            @CacheEvict(value = "all_courses_list", allEntries = true),
+            @CacheEvict(value = "courses_list", allEntries = true)
+    })
     public CourseDto patchUpdate(UUID id, PatchCourse patchCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if (existing.isEmpty()) {
@@ -219,7 +251,12 @@ public class CourseServiceImplement implements CourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"course", "courses_list"}, key = "#id", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "course", key = "#id"),
+            @CacheEvict(value = "none_delete_course", allEntries = true),
+            @CacheEvict(value = "all_courses_list", allEntries = true),
+            @CacheEvict(value = "courses_list", allEntries = true)
+    })
     public void delete(UUID id) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
         if(existing.isEmpty()) {

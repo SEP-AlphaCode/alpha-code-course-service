@@ -62,10 +62,21 @@ public class CategoryServiceImplement implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "none_delete_categories_list", key = "{#page, #size, #search}")
+    public PagedResult<CategoryDto> getNoneDeleteCategories(int page, int size, String search) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdDate").descending());
+
+        Page<Category> categoryPage = categoryRepository.findAllActiveCategories(search, pageable);
+
+        return new PagedResult<>(categoryPage.map(CategoryMapper::toDto));
+    }
+
+    @Override
     @Transactional
     @Caching(
             evict = {
                     @CacheEvict(value = "categories_list", allEntries = true),  // xóa toàn bộ danh sách
+                    @CacheEvict(value = "none_delete_categories_list", allEntries = true),  // xóa toàn bộ danh sách
                     @CacheEvict(value = "category", key = "{#id}")                // xóa chi tiết theo id
             }
     )
@@ -78,7 +89,12 @@ public class CategoryServiceImplement implements CategoryService {
     @Override
     @Transactional
     @CachePut(value = "category", key = "{#result.id}") // thêm mới thì put vào cache theo id
-    @CacheEvict(value = "categories_list", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "categories_list", allEntries = true),  // xóa toàn bộ danh sách
+                    @CacheEvict(value = "none_delete_categories_list", allEntries = true)  // xóa toàn bộ danh sách
+            }
+    )
     public CategoryDto create(CreateCategory createCategory) {
         if (categoryRepository.existsByName(createCategory.getName())) {
             throw new ConflictException("Danh mục với tên " + createCategory.getName() + " đã tồn tại.");
@@ -108,7 +124,12 @@ public class CategoryServiceImplement implements CategoryService {
     @Override
     @Transactional
     @CachePut(value = "category", key = "{#result.id}") // update thì update lại cache theo id
-    @CacheEvict(value = "categories_list", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "categories_list", allEntries = true),  // xóa toàn bộ danh sách
+                    @CacheEvict(value = "none_delete_categories_list", allEntries = true)  // xóa toàn bộ danh sách
+            }
+    )
     public CategoryDto update(UUID id, UpdateCategory updateCategory) {
         Category existingCategory = categoryRepository.findNoneDeleteCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Danh mục với id: " + id + " không tìm thấy"));
@@ -134,7 +155,7 @@ public class CategoryServiceImplement implements CategoryService {
         } else if (updateCategory.getImageUrl() != null && !updateCategory.getImageUrl().isBlank()) {
             existingCategory.setImageUrl(updateCategory.getImageUrl());
         } else {
-            throw new BadRequestException("PUT category phải có ảnh (image file hoặc imageUrl)");
+            throw new BadRequestException("Chỉnh sửa danh mục phải có ảnh (image file hoặc imageUrl)");
         }
 
         Category savedEntity = categoryRepository.save(existingCategory);
@@ -144,7 +165,12 @@ public class CategoryServiceImplement implements CategoryService {
     @Override
     @Transactional
     @CachePut(value = "category", key = "{#id}") // patch cũng update cache
-    @CacheEvict(value = "categories_list", allEntries = true)
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "categories_list", allEntries = true),  // xóa toàn bộ danh sách
+                    @CacheEvict(value = "none_delete_categories_list", allEntries = true)  // xóa toàn bộ danh sách
+            }
+    )
     public CategoryDto patch(UUID id, PatchCategory patchCategory) {
         Category existingCategory = categoryRepository.findNoneDeleteCategoryById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Danh mục với idL: " + id + " không tìm thấy"));

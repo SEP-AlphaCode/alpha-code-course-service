@@ -1,11 +1,15 @@
 package site.alphacode.alphacodecourseservice.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.util.UUID;
@@ -15,7 +19,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 public class Submission extends BaseEntity {
     @Id
     @GeneratedValue(generator = "uuid")
@@ -23,8 +27,9 @@ public class Submission extends BaseEntity {
     @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
-    @Column(name = "log_file_url", length = 255)
-    private String logFileUrl;
+    @Type(JsonType.class)
+    @Column(name = "log_data", columnDefinition = "jsonb", nullable = false)
+    private JsonNode logData;
 
     @Column(name = "video_url", length = 255)
     private String videoUrl;

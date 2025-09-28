@@ -1,7 +1,6 @@
 package site.alphacode.alphacodecourseservice.base;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.MappedSuperclass;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 @SuperBuilder
-@NoArgsConstructor     // ✅ bắt buộc cho @SuperBuilder
+@NoArgsConstructor
 @AllArgsConstructor
 public class BaseEntityDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

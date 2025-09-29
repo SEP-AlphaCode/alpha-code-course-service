@@ -7,8 +7,10 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
+import site.alphacode.alphacodecourseservice.entity.Bundle;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AccountCourseRepository extends JpaRepository<AccountCourse, UUID> {
@@ -32,4 +34,7 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
             "FROM AccountCourse a " +
             "WHERE a.accountId = :accountId AND a.courseId = :courseId AND a.status = 1")
     boolean existsByAccountIdAndCourseId(UUID accountId, UUID courseId);
+
+    @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = : accountId AND ac.courseId = : courseId AND ac.status = 1")
+    Optional<AccountCourse> findByAccountIdAndCourseId(@Param("accountId") UUID accountId,@Param("courseId") UUID courseId);
 }

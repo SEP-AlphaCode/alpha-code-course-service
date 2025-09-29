@@ -1,7 +1,10 @@
 package site.alphacode.alphacodecourseservice.service.implement;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
@@ -15,6 +18,7 @@ import site.alphacode.alphacodecourseservice.service.SubmissionService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,20 @@ public class SubmissionServiceImplement implements SubmissionService {
     private final S3Service s3Service;
 
     @Override
+    @Cacheable(value = "submissionByAccountLessonId", key = "#accountLessonId")
+    public SubmissionDto getByAccountLessonId(UUID accountLessonId) {
+        var submission = submissionRepository
+                .findTopByAccountLessonIdAndStatusOrderByCreatedDateDesc(accountLessonId, 1) // status = 1 = đã nộp
+                .orElseThrow(() -> new BadRequestException(
+                        "Không tìm thấy submission với accountLessonId: " + accountLessonId
+                ));
+        return SubmissionMapper.toDto(submission);
+    }
+
+
+    @Override
+    @Transactional
+    @CachePut(value = "submissionByAccountLessonId", key = "#request.accountLessonId")
     public SubmissionDto createSubmission(CreateSubmission request) {
         if (request.getLogData() == null && request.getVideoFile() == null) {
             throw new BadRequestException("Phải gửi ít nhất logData hoặc videoFile");

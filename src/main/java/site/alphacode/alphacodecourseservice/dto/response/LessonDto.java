@@ -1,6 +1,7 @@
 package site.alphacode.alphacodecourseservice.dto.response;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
@@ -10,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
+import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
+import site.alphacode.alphacodecourseservice.enums.LessonEnum;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -34,5 +37,10 @@ public class LessonDto extends BaseEntityDto implements Serializable {
     private Integer orderNumber;
 
     private UUID courseId;
+
+    @JsonProperty(value = "statusText")
+    public String getStatusText() {
+        return LessonEnum.fromCode(this.getStatus());
+    }
 }
 

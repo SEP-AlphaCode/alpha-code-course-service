@@ -1,5 +1,6 @@
 package site.alphacode.alphacodecourseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
+import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
+import site.alphacode.alphacodecourseservice.enums.BundleEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,5 +26,9 @@ public class BundleDto extends BaseEntityDto implements Serializable {
     private BigDecimal price;
     private BigDecimal discountPrice;
     private String coverImage;
+    @JsonProperty(value = "statusText")
+    public String getStatusText() {
+        return BundleEnum.fromCode(this.getStatus());
+    }
 }
 

@@ -5,15 +5,16 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum AccountCourseEnum {
-    IN_PROGRESS(1, "IN_PROGRESS"),
-    COMPLETED(2, "COMPLETED");
+public enum SubmissionEnum {
+    SUBMITTED(1, "STARTED"),
+    COMPLETED(2, "COMPLETED"),
+    FAILED(3, "FAILED");
     private final int code;
     private final String description;
 
     public static String fromCode(Integer code) {
         if (code == null) return null;
-        for (AccountCourseEnum s : values()) {
+        for (SubmissionEnum s : values()) {
             if (s.code == code) {
                 return s.description;
             }

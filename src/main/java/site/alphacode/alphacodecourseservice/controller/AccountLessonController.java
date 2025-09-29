@@ -3,10 +3,9 @@ package site.alphacode.alphacodecourseservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
 import site.alphacode.alphacodecourseservice.service.AccountLessonService;
 
@@ -22,7 +21,22 @@ public class AccountLessonController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get account course by id")
+    @PreAuthorize("hasAuthority('ROLE_User')")
     public Optional<AccountLessonWithLesson> getAccountLessonWithLesson(@PathVariable UUID id) {
         return accountLessonService.getAccountLessionWithLessonById(id);
+    }
+
+    @PostMapping()
+    @Operation(summary = "Create account lesson")
+    @PreAuthorize("hasAuthority('ROLE_User')")
+    public AccountLessonWithLesson createAccountLesson(CreateAccountLesson createAccountLesson) {
+        return accountLessonService.create(createAccountLesson);
+    }
+
+    @PostMapping("/mark-complete/{accountLessonId}")
+    @Operation(summary = "Mark account lesson as complete")
+    @PreAuthorize("hasAuthority('ROLE_User')")
+    public void markAccountLessonAsComplete(@PathVariable UUID accountLessonId) {
+        accountLessonService.markComplete(accountLessonId);
     }
 }

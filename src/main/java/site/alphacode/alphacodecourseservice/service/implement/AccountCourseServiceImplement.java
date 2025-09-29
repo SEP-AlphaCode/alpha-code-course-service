@@ -64,51 +64,6 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     }
 
     @Override
-    @Transactional
-    @CachePut(value = "account_course", key = "{#id}")
-    @CacheEvict(value = "account_courses", allEntries = true)
-    public AccountCourseDto update(UUID id, AccountCourseDto dto) {
-        var accountCourse = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
-
-        // Map từ DTO sang entity
-        AccountCourseMapper.updateEntityFromDto(dto, accountCourse);
-
-        // Cập nhật lastAccessed
-        accountCourse.setLastAccessed(LocalDateTime.now());
-
-        accountCourse = repository.save(accountCourse);
-        return AccountCourseMapper.toDto(accountCourse);
-    }
-
-    @Override
-    @Transactional
-    @CachePut(value = "account_course", key = "{#id}")
-    @CacheEvict(value = "account_courses", allEntries = true)
-    public AccountCourseDto patchUpdate(UUID id, AccountCourseDto dto) {
-        var accountCourse = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
-
-        if (dto.getCompleted()) {
-            dto.setProgressPercent(100);
-            dto.setCompletedLesson(accountCourse.getTotalLesson());
-        }
-
-        if (dto.getCompletedLesson() != null) {
-            accountCourse.setCompletedLesson(dto.getCompletedLesson());
-        }
-
-        if (dto.getProgressPercent() != null) {
-            accountCourse.setProgressPercent(dto.getProgressPercent());
-        }
-
-        accountCourse.setLastAccessed(LocalDateTime.now());
-
-        accountCourse = repository.save(accountCourse);
-        return AccountCourseMapper.toDto(accountCourse);
-    }
-
-    @Override
     @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
     public List<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);

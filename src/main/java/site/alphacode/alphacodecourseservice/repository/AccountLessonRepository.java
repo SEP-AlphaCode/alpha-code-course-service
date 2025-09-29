@@ -28,6 +28,4 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
             @Param("accountId") UUID accountId,
             Pageable pageable
     );
-
-    Optional<AccountLessonWithLesson> findAccountLessonWithLessonById(UUID id);
 }

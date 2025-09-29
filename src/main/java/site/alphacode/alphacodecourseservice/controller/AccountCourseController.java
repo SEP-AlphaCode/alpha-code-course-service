@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
@@ -34,17 +35,10 @@ public class AccountCourseController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create new action")
+    @Operation(summary = "Create new account course")
+    @PreAuthorize("hasAuthority('ROLE_User')")
     public AccountCourseDto createAccountCourse(@RequestBody CreateAccountCourse createAccountCourse) {
         return accountCourseService.create(createAccountCourse);
     }
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Update account course")
-    public AccountCourseDto updateAccountCourse(@PathVariable UUID id, @RequestBody AccountCourseDto accountCourseDto) {
-        return accountCourseService.update(id, accountCourseDto);
-    }
-
-
 
 }

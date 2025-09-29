@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.AccountCourseEnum;
+import site.alphacode.alphacodecourseservice.enums.CourseEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -42,7 +43,7 @@ public class CourseDto extends BaseEntityDto implements Serializable {
 
     @JsonProperty(value = "statusText")
     public String getStatusText() {
-        return AccountCourseEnum.fromCode(this.getStatus());
+        return CourseEnum.fromCode(this.getStatus());
     }
 }
 

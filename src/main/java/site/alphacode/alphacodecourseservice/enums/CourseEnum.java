@@ -5,15 +5,17 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum AccountCourseEnum {
-    IN_PROGRESS(1, "IN_PROGRESS"),
-    COMPLETED(2, "COMPLETED");
+public enum CourseEnum {
+
+    DELETED(0, "DELETED"),
+    ACTIVE(1, "ACTIVE"),
+    INACTIVE(2, "INACTIVE");
     private final int code;
     private final String description;
 
     public static String fromCode(Integer code) {
         if (code == null) return null;
-        for (AccountCourseEnum s : values()) {
+        for (CourseEnum s : values()) {
             if (s.code == code) {
                 return s.description;
             }

@@ -28,7 +28,7 @@ public class Submission extends BaseEntity {
     private UUID id;
 
     @Type(JsonType.class)
-    @Column(name = "log_data", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "log_data", columnDefinition = "jsonb")
     private JsonNode logData;
 
     @Column(name = "video_url", length = 255)

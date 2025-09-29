@@ -27,7 +27,7 @@ public class SubmissionServiceImplement implements SubmissionService {
     private final S3Service s3Service;
 
     @Override
-    @Cacheable(value = "submissionByAccountLessonId", key = "#accountLessonId")
+    @Cacheable(value = "submissionByAccountLessonId", key = "{#accountLessonId}")
     public SubmissionDto getByAccountLessonId(UUID accountLessonId) {
         var submission = submissionRepository
                 .findTopByAccountLessonIdAndStatusOrderByCreatedDateDesc(accountLessonId, 1) // status = 1 = đã nộp
@@ -40,7 +40,7 @@ public class SubmissionServiceImplement implements SubmissionService {
 
     @Override
     @Transactional
-    @CachePut(value = "submissionByAccountLessonId", key = "#request.accountLessonId")
+    @CachePut(value = "submissionByAccountLessonId", key = "{#request.accountLessonId}")
     public SubmissionDto createSubmission(CreateSubmission request) {
         if (request.getLogData() == null && request.getVideoFile() == null) {
             throw new BadRequestException("Phải gửi ít nhất logData hoặc videoFile");

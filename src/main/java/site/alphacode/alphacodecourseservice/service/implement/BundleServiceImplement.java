@@ -34,7 +34,7 @@ public class BundleServiceImplement implements BundleService {
     private final S3Service s3Service;
 
     @Override
-    @Cacheable(value = "bundle", key = "#id")
+    @Cacheable(value = "bundle", key = "{#id}")
     public BundleDto getById(UUID id){
         var bundle = bundleRepository.findNoneDeleteById(id).orElseThrow(
                 () -> new BadRequestException("Gói không tồn tại")
@@ -43,7 +43,7 @@ public class BundleServiceImplement implements BundleService {
     }
 
     @Override
-    @Cacheable(value = "active_bundle", key = "#id")
+    @Cacheable(value = "active_bundle", key = "{#id}")
     public BundleDto getActiveById(UUID id){
         var bundle = bundleRepository.findByIdAndStatus(id, 1).orElseThrow(
                 () -> new BadRequestException("Gói không tồn tại")
@@ -69,7 +69,7 @@ public class BundleServiceImplement implements BundleService {
 
     @Override
     @Transactional
-    @CachePut(value = "bundle", key = "#result.id")
+    @CachePut(value = "bundle", key = "{#result.id}")
     @Caching(
             evict = {
                     @CacheEvict(value = "bundles_list", allEntries = true),
@@ -113,12 +113,12 @@ public class BundleServiceImplement implements BundleService {
 
     @Override
     @Transactional
-    @CachePut(value = "bundle", key = "#id")
+    @CachePut(value = "bundle", key = "{#id}")
     @Caching(
             evict = {
                     @CacheEvict(value = "bundles_list", allEntries = true),
                     @CacheEvict(value = "all_bundles_list", allEntries = true),
-                    @CacheEvict(value = "active_bundle", key = "#id")
+                    @CacheEvict(value = "active_bundle", key = "{#id}")
             }
     )
     public BundleDto update(UUID id, UpdateBundle updateBundle){
@@ -171,12 +171,12 @@ public class BundleServiceImplement implements BundleService {
 
     @Override
     @Transactional
-    @CachePut(value = "bundle", key = "#id")
+    @CachePut(value = "bundle", key = "{#id}")
     @Caching(
             evict = {
                     @CacheEvict(value = "bundles_list", allEntries = true),
                     @CacheEvict(value = "all_bundles_list", allEntries = true),
-                    @CacheEvict(value = "active_bundle", key = "#id")
+                    @CacheEvict(value = "active_bundle", key = "{#id}")
             }
     )
     public BundleDto patch(UUID id, PatchBundle patchBundle){
@@ -240,7 +240,7 @@ public class BundleServiceImplement implements BundleService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"bundle", "active_bundle"}, key = "#id")
+    @CacheEvict(value = {"bundle", "active_bundle"}, key = "{#id}")
     @Caching(
             evict = {
                     @CacheEvict(value = "bundles_list", allEntries = true),

@@ -35,7 +35,7 @@ public class CourseServiceImplement implements CourseService {
     private final S3Service s3Service;
 
     @Override
-    @Cacheable(value = "course", key = "#id")
+    @Cacheable(value = "course", key = "{#id}")
     public CourseDto getActiveCourseById(UUID id) {
         var entity = courseRepository.findActiveCourseById(id);
         if(entity.isEmpty()) {
@@ -45,7 +45,7 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
-    @Cacheable(value = "course", key = "#slug")
+    @Cacheable(value = "course", key = "{#slug}")
     public CourseDto getActiveCourseBySlug(String slug) {
         var entity = courseRepository.findActiveCourseBySlug(slug);
         if(entity.isEmpty()) {
@@ -55,7 +55,7 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
-    @Cacheable(value = "none_delete_course", key = "#id")
+    @Cacheable(value = "none_delete_course", key = "{#id}")
     public CourseDto getNoneDeleteCourseById(UUID id) {
         var entity = courseRepository.findNoneDeleteCourseById(id);
         if(entity.isEmpty()) {
@@ -126,7 +126,7 @@ public class CourseServiceImplement implements CourseService {
 
     @Override
     @Transactional
-    @CachePut(value = "course", key = "#id")
+    @CachePut(value = "course", key = "{#id}")
     @Caching(evict = {
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
@@ -181,7 +181,7 @@ public class CourseServiceImplement implements CourseService {
 
     @Override
     @Transactional
-    @CachePut(value = "course", key = "#id")
+    @CachePut(value = "course", key = "{#id}")
     @Caching(evict = {
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
@@ -252,7 +252,7 @@ public class CourseServiceImplement implements CourseService {
     @Override
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "course", key = "#id"),
+            @CacheEvict(value = "course", key = "{#id}"),
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
             @CacheEvict(value = "courses_list", allEntries = true)

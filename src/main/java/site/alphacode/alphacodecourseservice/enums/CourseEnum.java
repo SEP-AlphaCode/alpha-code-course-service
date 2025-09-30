@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CourseEnum {
 
-    DELETED(0, "DELETED"),
-    ACTIVE(1, "ACTIVE"),
-    INACTIVE(2, "INACTIVE");
+    DELETED(0, "ĐÃ XÓA"),
+    ACTIVE(1, "ĐANG HOẠT ĐỘNG"),
+    INACTIVE(2, "KHÔNG HOẠT ĐỘNG");
     private final int code;
     private final String description;
 

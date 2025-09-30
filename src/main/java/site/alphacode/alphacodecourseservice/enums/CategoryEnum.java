@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum CategoryEnum {
-    DELETED(0, "DELETED"),
-    ACTIVE(1, "ACTIVE"),
-    INACTIVE(2, "INACTIVE");
+    DELETED(0, "ĐÃ XÓA"),
+    ACTIVE(1, "ĐANG HOẠT ĐỘNG"),
+    INACTIVE(2, "KHÔNG HOẠT ĐỘNG");
     private final int code;
     private final String description;
 

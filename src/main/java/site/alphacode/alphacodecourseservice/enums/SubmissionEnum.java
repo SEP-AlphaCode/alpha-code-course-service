@@ -6,12 +6,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SubmissionEnum {
-    PENDING_AUTO(1, "PENDING_AUTO"),
-    PASS_AUTO(2, "PASS_AUTO"),
-    FAIL_AUTO(3, "FAIL_AUTO"),
-    PENDING_REVIEW(4, "PENDING_REVIEW"),
-    PASS_HUMAN(5, "PASS_HUMAN"),
-    FAIL_HUMAN(6, "FAIL_HUMAN");
+    PENDING_AUTO(1, "CHỜ CHẤM TỰ ĐỘNG"),
+    PASS_AUTO(2, "CHẤM ĐẠT TỰ ĐỘNG"),
+    FAIL_AUTO(3, "CHẤM KHÔNG ĐẠT TỰ ĐỘNG"),
+    PENDING_REVIEW(4, "CHỜ CHẤM BỞI NHÂN VIÊN"),
+    PASS_HUMAN(5, "CHẤM ĐẠT BỞI NHÂN VIÊN"),
+    FAIL_HUMAN(6, "CHẤM KHÔNG ĐẠT BỞI NHÂN VIÊN");
 
     private final int code;
     private final String description;

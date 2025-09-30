@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum AccountLessonEnum {
-    IN_PROGRESS(1, "IN_PROGRESS"),
-    COMPLETED(2, "COMPLETED");
+    IN_PROGRESS(1, "Đang tiến hành"),
+    COMPLETED(2, "Hoàn thành");
     private final int code;
     private final String description;
 

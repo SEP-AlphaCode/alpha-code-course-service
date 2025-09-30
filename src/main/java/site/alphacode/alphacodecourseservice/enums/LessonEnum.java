@@ -7,13 +7,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum LessonEnum {
     // Status
-    DELETED(0, "DELETED"),
-    ACTIVE(1, "ACTIVE"),
-    INACTIVE(2, "INACTIVE"),
+    DELETED(0, "ĐÃ XÓA"),
+    ACTIVE(1, "ĐANG HOẠT ĐỘNG"),
+    INACTIVE(2, "KHÔNG HOẠT ĐỘNG"),
 
     // Type
-    LESSON(3, "LESSON"),
-    TEST(4, "TEST");
+    LESSON(3, "BÀI HỌC"),
+    TEST(4, "BÀI KIỂM TRA");
     private final int code;
     private final String description;
 

@@ -6,13 +6,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
 import site.alphacode.alphacodecourseservice.dto.response.SubmissionDto;
 import site.alphacode.alphacodecourseservice.entity.Submission;
+import site.alphacode.alphacodecourseservice.enums.SubmissionEnum;
 import site.alphacode.alphacodecourseservice.exception.BadRequestException;
+import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.SubmissionMapper;
+import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SubmissionRepository;
+import site.alphacode.alphacodecourseservice.service.CheckerService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.service.SubmissionService;
 
@@ -25,6 +29,9 @@ import java.util.UUID;
 public class SubmissionServiceImplement implements SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final S3Service s3Service;
+    private final CheckerService checkerService;
+    private final AccountLessonServiceImplement accountLessonService;
+    private final AccountLessonRepository accountLessonRepository;
 
     @Override
     @Cacheable(value = "submissionByAccountLessonId", key = "{#accountLessonId}")
@@ -46,24 +53,16 @@ public class SubmissionServiceImplement implements SubmissionService {
             throw new BadRequestException("Phải gửi ít nhất logData hoặc videoFile");
         }
 
-        JsonNode logData = null;
+        JsonNode logData = request.getLogData();
         String videoUrl = null;
 
-        // Nếu có logData (robot gửi JSON)
-        if (request.getLogData() != null) {
-            logData = request.getLogData();
-        }
-
-        // Nếu có videoFile
-        MultipartFile videoFile = request.getVideoFile();
-        if (videoFile != null && !videoFile.isEmpty()) {
+        if (request.getVideoFile() != null && !request.getVideoFile().isEmpty()) {
             try {
-                // upload lên storage (S3, local,...)
-                String fileKey = "submissions/" + videoFile.getOriginalFilename();
+                String fileKey = "submissions/" + request.getVideoFile().getOriginalFilename();
                 videoUrl = s3Service.uploadBytes(
-                        videoFile.getBytes(),
+                        request.getVideoFile().getBytes(),
                         fileKey,
-                        videoFile.getContentType()
+                        request.getVideoFile().getContentType()
                 );
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
@@ -75,12 +74,60 @@ public class SubmissionServiceImplement implements SubmissionService {
                 .logData(logData)
                 .videoUrl(videoUrl)
                 .createdDate(LocalDateTime.now())
-                .lastUpdated(null)
-                .status(1) // Mặc định là 1 - Đã nộp
+                .status(1)
                 .build();
 
-        var savedSubmission = submissionRepository.save(submission);
+        // Auto-check log nếu có
+        if (logData != null) {
+            boolean isPass = checkerService.autoCheck(submission);
+            if (isPass) {
+                submission.setStatus(2); // 2 = PASSED
 
-        return SubmissionMapper.toDto(savedSubmission);
+                // Mark AccountLesson complete
+                var accountLesson = accountLessonRepository.findById(request.getAccountLessonId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
+                if (accountLesson.getCompletedAt() == null) {
+                    accountLessonService.markComplete(request.getAccountLessonId());
+                }
+            } else {
+                submission.setStatus(3); // 3 = FAILED
+            }
+        } else {
+            submission.setStatus(4);
+        }
+
+        Submission saved = submissionRepository.save(submission);
+        return SubmissionMapper.toDto(saved);
     }
+
+    @Override
+    @Transactional
+    @CachePut(value = "submissionByAccountLessonId", key = "{#submissionId}")
+    public SubmissionDto reviewSubmission(UUID submissionId, StaffReviewRequest request) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy submission: " + submissionId));
+
+        if (!submission.getStatus().equals(SubmissionEnum.PENDING_REVIEW.getCode())) {
+            throw new BadRequestException("Submission này không ở trạng thái cần review");
+        }
+
+        if (request.isApproved()) {
+            submission.setStatus(SubmissionEnum.PASS_HUMAN.getCode());
+        } else {
+            submission.setStatus(SubmissionEnum.FAIL_HUMAN.getCode());
+        }
+
+        submission.setLastUpdated(LocalDateTime.now());
+        submission.setStaffComment(request.getComment());
+
+        Submission saved = submissionRepository.save(submission);
+
+        // Nếu PASS thì cập nhật tiến độ course (giống auto check)
+        if (request.isApproved()) {
+            accountLessonService.markComplete(submission.getAccountLessonId());
+        }
+
+        return SubmissionMapper.toDto(saved);
+    }
+
 }

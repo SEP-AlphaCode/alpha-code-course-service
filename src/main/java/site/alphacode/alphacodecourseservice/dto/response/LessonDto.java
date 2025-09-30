@@ -38,6 +38,13 @@ public class LessonDto extends BaseEntityDto implements Serializable {
 
     private UUID courseId;
 
+    private Integer type;
+
+    @JsonProperty(value = "typeText")
+    public String getTypeText() {
+        return LessonEnum.fromCode(this.getType());
+    }
+
     @JsonProperty(value = "statusText")
     public String getStatusText() {
         return LessonEnum.fromCode(this.getStatus());

@@ -40,6 +40,9 @@ public class CreateLesson {
     @NotNull(message = "Course ID là bắt buộc")
     private UUID courseId;
 
+    @NotNull(message = "Loại bài học là bắt buộc")
+    private Integer type;
+
     @NotNull(message = "Dữ liệu giải pháp là bắt buộc")
     private JsonNode solution;
 }

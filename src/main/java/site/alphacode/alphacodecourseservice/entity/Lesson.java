@@ -49,6 +49,9 @@ public class Lesson extends BaseEntity {
     @Column(name = "order_number", nullable = false)
     private Integer orderNumber;
 
+    @Column(name = "type", nullable = false)
+    private Integer type;
+
     @Column(name = "course_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID courseId;
 

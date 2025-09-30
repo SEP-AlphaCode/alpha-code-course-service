@@ -118,6 +118,7 @@ public class LessonServiceImplement implements LessonService {
         newLesson.setTitle(createLesson.getTitle());
         newLesson.setCreatedDate(LocalDateTime.now());
         newLesson.setLastUpdated(null);
+        newLesson.setType(createLesson.getType());
 
         Lesson saved = lessonRepository.save(newLesson);
 
@@ -172,6 +173,7 @@ public class LessonServiceImplement implements LessonService {
         existing.setSolution(updateLesson.getSolution());
         existing.setStatus(updateLesson.getStatus());
         existing.setLastUpdated(LocalDateTime.now());
+        existing.setType(updateLesson.getType());
 
         Lesson saved = lessonRepository.save(existing);
 
@@ -233,6 +235,10 @@ public class LessonServiceImplement implements LessonService {
         }
         if (patchLesson.getStatus() != null) {
             existing.setStatus(patchLesson.getStatus());
+        }
+
+        if (patchLesson.getType() != null) {
+            existing.setType(patchLesson.getType());
         }
 
         existing.setLastUpdated(LocalDateTime.now());

@@ -3,10 +3,7 @@ package site.alphacode.alphacodecourseservice.entity;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -36,6 +33,15 @@ public class Submission extends BaseEntity {
 
     @Column(name = "account_lesson_id", nullable = false, columnDefinition = "uuid")
     private UUID accountLessonId;
+
+    // Comment của staff khi human chấm
+    @Column(name = "staff_comment", columnDefinition = "text")
+    private String staffComment;
+
+    // Các action còn thiếu khi auto-check FAIL
+    @Type(JsonType.class)
+    @Column(name = "missing_actions", columnDefinition = "jsonb")
+    private JsonNode missingActions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_lesson_id", insertable = false, updatable = false)

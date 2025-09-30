@@ -19,4 +19,5 @@ public class PatchLesson {
     private Integer status;
     private Integer orderNumber;
     private Integer duration;
+    private Integer type;
 }

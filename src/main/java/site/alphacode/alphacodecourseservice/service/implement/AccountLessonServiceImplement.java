@@ -11,22 +11,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountLesson;
-import site.alphacode.alphacodecourseservice.dto.response.AccountLessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration;
 import site.alphacode.alphacodecourseservice.entity.AccountLesson;
+import site.alphacode.alphacodecourseservice.entity.Certificate;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.AccountLessonMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
 import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
+import site.alphacode.alphacodecourseservice.repository.CertificateRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
-import site.alphacode.alphacodecourseservice.service.AccountCourseService;
+import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.service.AccountLessonService;
-import site.alphacode.alphacodecourseservice.service.CourseService;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +35,11 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       private final AccountLessonRepository accountLessonRepository;
       private final AccountCourseRepository accountCourseRepository;
       private final LessonRepository lessonRepository;
+      private final CourseRepository courseRepository;
+      private final CertificateRepository certificateRepository;
 
-      @Override
-      @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
+    @Override
+    @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
       public Page<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(UUID courseId, UUID accountId, int page, int size) {
             Pageable pageable = PageRequest.of(page - 1, size, Sort.by("lesson.order_number").ascending());
             accountCourseRepository.updateLastAccessedByAccountIdAndCourseId(courseId, accountId,java.time.LocalDateTime.now());
@@ -105,8 +108,19 @@ public class AccountLessonServiceImplement implements AccountLessonService {
             if (accountCourse.getCompletedLesson().equals(accountCourse.getTotalLesson())) {
                   accountCourse.setCompleted(true);
                   accountCourse.setStatus(2); // Hoàn thành
+                  accountCourseRepository.save(accountCourse);
+
+                    // Tạo chứng chỉ nếu chưa có
+                  if (!certificateRepository.existsByAccountIdAndCourseId(accountCourse.getAccountId(), accountCourse.getCourseId())) {
+                      Certificate certificate = new Certificate();
+                        certificate.setAccountId(accountCourse.getAccountId());
+                        certificate.setCourseId(accountCourse.getCourseId());
+                        certificate.setIssuedDate(LocalDateTime.now());
+                        certificate.setStatus(1);
+                        certificateRepository.save(certificate);
+                  }
             }
-            accountCourseRepository.save(accountCourse);
+
             return AccountLessonMapper.toAccountLessonWithLesson(updated, lesson);
       }
 }

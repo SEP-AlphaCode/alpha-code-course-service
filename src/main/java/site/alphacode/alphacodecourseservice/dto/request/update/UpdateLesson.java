@@ -44,4 +44,7 @@ public class UpdateLesson {
 
         @NotNull(message = "Thời lượng bài học là bắt buộc")
         private Integer duration; // tính bằng giây
+
+        @NotNull(message = "Loại bài học là bắt buộc")
+        private Integer type;
 }

@@ -25,7 +25,7 @@ public class CourseDto extends BaseEntityDto implements Serializable {
 
     private String description;
 
-    private BigDecimal price;
+    private Integer price;
 
     private Boolean requireLicense;
 

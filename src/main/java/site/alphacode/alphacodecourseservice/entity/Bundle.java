@@ -32,11 +32,11 @@ public class Bundle extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "price", nullable = false)
+    private Integer price;
 
-    @Column(name = "discount_price", precision = 10, scale = 2)
-    private BigDecimal discountPrice;
+    @Column(name = "discount_price")
+    private Integer discountPrice;
 
     @Column(name = "cover_image", length = 512)
     private String coverImage;

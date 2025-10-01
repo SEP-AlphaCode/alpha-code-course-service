@@ -27,9 +27,8 @@ public class UpdateCourse {
     private String description;
 
     @NotNull(message = "Giá khóa học là bắt buộc")
-    @DecimalMin(value = "0.0", inclusive = true, message = "Giá phải lớn hơn hoặc bằng 0")
-    @Digits(integer = 8, fraction = 2, message = "Giá phải là số hợp lệ, tối đa 8 chữ số nguyên và 2 chữ số thập phân")
-    private BigDecimal price;
+    @Min(value = 1, message = "Số tiền phải lớn hơn 0")
+    private Integer price;
 
     @NotNull(message = "Trạng thái yêu cầu giấy phép là bắt buộc")
     private Boolean requireLicense;

@@ -23,8 +23,8 @@ public class BundleDto extends BaseEntityDto implements Serializable {
     private UUID id;
     private String name;
     private String description;
-    private BigDecimal price;
-    private BigDecimal discountPrice;
+    private Integer price;
+    private Integer discountPrice;
     private String coverImage;
     @JsonProperty(value = "statusText")
     public String getStatusText() {

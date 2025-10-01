@@ -32,8 +32,8 @@ public class Course extends BaseEntity {
     @Column(name = "description", columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "price", nullable = false)
+    private Integer price;
 
     @Column(name = "require_license", nullable = false)
     private Boolean requireLicense;

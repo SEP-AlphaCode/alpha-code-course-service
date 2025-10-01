@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.dto.request.patch;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,11 +23,11 @@ public class PatchBundle {
 
     private String description;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Giá phải lớn hơn 0")
-    private BigDecimal price;
+    @Min(value = 1, message = "Số tiền phải lớn hơn 0")
+    private Integer price;
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "Giá giảm phải >= 0")
-    private BigDecimal discountPrice;
+    @Min(value = 1, message = "Số tiền giảm phải lớn hơn 0")
+    private Integer discountPrice;
 
     @Schema(description = "URL ảnh cũ, nếu giữ nguyên")
     private String coverImage;

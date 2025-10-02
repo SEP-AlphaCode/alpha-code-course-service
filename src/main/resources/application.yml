@@ -40,7 +40,7 @@ spring:
 grpc:
   client:
     alpha-user-service:
-      address: "static://alpha-user-service:50051"
+      address: static://${GRPC_USER_SERVICE_BASE_URL}:${GRPC_USER_SERVICE_PORT}
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext

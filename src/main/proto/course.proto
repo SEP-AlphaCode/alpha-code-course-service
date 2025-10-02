@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package course;
+
+// Tên service
+service CourseService {
+  // RPC lấy thông tin course theo courseId
+  rpc GetCourse(GetIdRequest) returns (CourseInformation);
+  rpc GetBundle(GetIdRequest) returns (BundleInformation);
+}
+
+// Request
+message GetIdRequest {
+  string id = 1;
+}
+
+// Response
+message CourseInformation {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 price = 4;
+  int32 level = 5;
+  int32 totalLessions = 6;
+  int32 totalDuration = 7;
+  string imageUrl = 8;
+  string slug = 9;
+  string categoryId = 10;
+}
+
+message BundleInformation {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 level = 4;
+  int32 discountPrice = 5;
+  string coverImage = 6;
+}

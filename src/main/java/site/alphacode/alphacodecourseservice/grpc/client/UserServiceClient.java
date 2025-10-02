@@ -21,7 +21,7 @@ public class UserServiceClient {
             @Value("${grpc.user-service.port}") int userServicePort
     ) {
         this.channel = ManagedChannelBuilder.forAddress(userServiceUrl, userServicePort)
-                .useTransportSecurity() // dùng TLS, hoặc usePlaintext() nếu chưa TLS
+                .usePlaintext() // <-- chạy không TLS
                 .build();
         this.blockingStub = UserServiceGrpc.newBlockingStub(channel);
     }

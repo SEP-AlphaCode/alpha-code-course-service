@@ -39,9 +39,11 @@ spring:
 
 grpc:
   client:
-    user-service:
+    alpha-user-service:
       address: "static://alpha-user-service:50051"
-      plaintext: true
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
 
 server:
   forward-headers-strategy: native

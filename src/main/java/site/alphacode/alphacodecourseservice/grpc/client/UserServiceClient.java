@@ -20,7 +20,7 @@ public class UserServiceClient {
             @Value("${grpc.user-service.base-url}") String userServiceUrl,
             @Value("${grpc.user-service.port}") int userServicePort
     ) {
-        this.channel = ManagedChannelBuilder.forAddress(userServiceUrl, userServicePort)
+        this.channel = ManagedChannelBuilder.forAddress("172.19.0.12", 50051)
                 .usePlaintext() // <-- chạy không TLS
                 .build();
         this.blockingStub = UserServiceGrpc.newBlockingStub(channel);

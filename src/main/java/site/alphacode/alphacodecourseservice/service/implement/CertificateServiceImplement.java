@@ -2,6 +2,7 @@ package site.alphacode.alphacodecourseservice.service.implement;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCertificate;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CertificateServiceImplement implements CertificateService {
     private final CertificateRepository certificateRepository;
     private final CourseRepository courseRepository;
@@ -39,16 +41,31 @@ public class CertificateServiceImplement implements CertificateService {
     @Override
     @Transactional
     @Cacheable(value = "certificate_info", key = "{#createCertificate.accountId, #createCertificate.courseId}")
-    public CertificateInformation create(CreateCertificate createCertificate){
-        var certificate = certificateRepository.getByAccountIdAndCourseId(createCertificate.getAccountId(), createCertificate.getCourseId());
+    public CertificateInformation create(CreateCertificate createCertificate) {
+        var certificate = certificateRepository.getByAccountIdAndCourseId(
+                createCertificate.getAccountId(), createCertificate.getCourseId());
 
-        if (certificate.isPresent()){
+        if (certificate.isPresent()) {
+            log.warn("Certificate already exists for accountId={} courseId={}",
+                    createCertificate.getAccountId(), createCertificate.getCourseId());
             throw new RuntimeException("Certificate đã tồn tại");
         }
 
-        var course = courseRepository.findActiveCourseById(createCertificate.getCourseId()).orElseThrow(()-> new RuntimeException("Course với id: " + createCertificate.getCourseId() + " không tìm thấy"));
-        var account = userServiceClient.getAccount(createCertificate.getAccountId().toString());
-        var userFullName = account.getFullName().isEmpty() ? createCertificate.getAccountId().toString() : account.getFullName();
+        var course = courseRepository.findActiveCourseById(createCertificate.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course với id: " + createCertificate.getCourseId() + " không tìm thấy"));
+
+        // fallback tên người dùng
+        String userFullName = createCertificate.getAccountId().toString();
+
+        try {
+            var account = userServiceClient.getAccount(createCertificate.getAccountId().toString());
+            if (account != null && account.getFullName() != null && !account.getFullName().isEmpty()) {
+                userFullName = account.getFullName();
+            }
+        } catch (Exception e) {
+            log.warn("Không lấy được account từ UserService, dùng fallback accountId={}, error={}",
+                    createCertificate.getAccountId(), e.getMessage());
+        }
 
         Certificate newCertificate = new Certificate();
         newCertificate.setAccountId(createCertificate.getAccountId());
@@ -56,9 +73,11 @@ public class CertificateServiceImplement implements CertificateService {
         newCertificate.setIssuedDate(LocalDateTime.now());
         newCertificate.setStatus(1);
 
-
-
         newCertificate = certificateRepository.save(newCertificate);
-        return  CertificateMapper.toCertificateInformation(newCertificate, userFullName, course.getName());
+        log.info("Created certificate id={} for accountId={} and courseId={}",
+                newCertificate.getId(), createCertificate.getAccountId(), createCertificate.getCourseId());
+
+        return CertificateMapper.toCertificateInformation(newCertificate, userFullName, course.getName());
     }
+
 }

@@ -38,9 +38,10 @@ spring:
       max-request-size: 50MB
 
 grpc:
-  user-service:
-    base-url: ${GRPC_USER_SERVICE_BASE_URL}
-    port: ${GRPC_USER_SERVICE_PORT}
+  client:
+    user-service:
+      address: "static://alpha-user-service:50051"
+      plaintext: true
 
 server:
   forward-headers-strategy: native

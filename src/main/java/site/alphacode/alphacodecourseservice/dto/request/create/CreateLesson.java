@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -29,6 +30,8 @@ public class CreateLesson {
     private String contentType;
 
     private String content;
+
+    private MultipartFile videoFile;
 
     @NotNull(message = "Thời lượng bài học là bắt buộc")
     @Min(value = 1, message = "Thời lượng bài học phải ít nhất 1 giây")

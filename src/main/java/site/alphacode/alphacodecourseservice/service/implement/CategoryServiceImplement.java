@@ -109,7 +109,7 @@ public class CategoryServiceImplement implements CategoryService {
         category.setStatus(1);
         try {
             if (createCategory.getImage() != null && !createCategory.getImage().isEmpty()) {
-                String fileKey = "categories/" + createCategory.getImage().getOriginalFilename();
+                String fileKey = "categories/" + System.currentTimeMillis() + "_" +  createCategory.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(createCategory.getImage().getBytes(), fileKey, createCategory.getImage().getContentType());
                 category.setImageUrl(imageUrl);
             }
@@ -142,7 +142,7 @@ public class CategoryServiceImplement implements CategoryService {
         // Xử lý ảnh (PUT => bắt buộc có image file hoặc imageUrl)
         if (updateCategory.getImage() != null && !updateCategory.getImage().isEmpty()) {
             try {
-                String fileKey = "categories/" + updateCategory.getImage().getOriginalFilename();
+                String fileKey = "categories/" + System.currentTimeMillis() + "_" +  updateCategory.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         updateCategory.getImage().getBytes(),
                         fileKey,
@@ -187,7 +187,7 @@ public class CategoryServiceImplement implements CategoryService {
 
         if (patchCategory.getImage() != null && !patchCategory.getImage().isEmpty()) {
             try {
-                String fileKey = "categories/" + patchCategory.getImage().getOriginalFilename();
+                String fileKey = "categories/" + System.currentTimeMillis() + "_" +  patchCategory.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         patchCategory.getImage().getBytes(),
                         fileKey,

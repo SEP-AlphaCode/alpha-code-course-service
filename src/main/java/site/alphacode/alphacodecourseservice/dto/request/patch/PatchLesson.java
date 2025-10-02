@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
@@ -13,7 +14,8 @@ import lombok.NoArgsConstructor;
 public class PatchLesson {
     private String title;
     private String contentType;
-    private String content;
+    private String content; // text hoặc URL
+    private MultipartFile videoFile; // nếu update video
     private Boolean requireRobot;
     private JsonNode solution;
     private Integer status;

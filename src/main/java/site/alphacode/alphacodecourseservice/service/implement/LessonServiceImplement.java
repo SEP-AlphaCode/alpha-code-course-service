@@ -18,13 +18,16 @@ import site.alphacode.alphacodecourseservice.dto.response.LessonWithSolution;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.entity.Lesson;
+import site.alphacode.alphacodecourseservice.exception.BadRequestException;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.LessonMapper;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.LessonService;
+import site.alphacode.alphacodecourseservice.service.S3Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,6 +37,7 @@ import java.util.UUID;
 public class LessonServiceImplement implements LessonService {
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final S3Service s3Service;
 
     @Override
     @Cacheable(value = "lesson", key = "#id")
@@ -106,8 +110,29 @@ public class LessonServiceImplement implements LessonService {
         int maxOrder = lessonRepository.findMaxOrderNumberByCourseId(createLesson.getCourseId())
                 .orElse(0);
 
+        // Xử lý content
+        String contentToSave;
+        if (createLesson.getVideoFile() != null && !createLesson.getVideoFile().isEmpty()) {
+            // Upload video lên S3 -> trả về URL
+                try {
+                    String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  createLesson.getVideoFile().getOriginalFilename();
+                    contentToSave = s3Service.uploadBytes(
+                            createLesson.getVideoFile().getBytes(),
+                            fileKey,
+                            createLesson.getVideoFile().getContentType()
+                    );
+                } catch (IOException e) {
+                    throw new RuntimeException("Upload video thất bại", e);
+                }
+        } else {
+            if (createLesson.getContent() == null || createLesson.getContent().isBlank()) {
+                throw new BadRequestException("Content là bắt buộc nếu không upload video.");
+            }
+            contentToSave = createLesson.getContent();
+        }
+
         Lesson newLesson = new Lesson();
-        newLesson.setContent(createLesson.getContent());
+        newLesson.setContent(contentToSave);
         newLesson.setContentType(createLesson.getContentType());
         newLesson.setCourseId(createLesson.getCourseId());
         newLesson.setDuration(createLesson.getDuration());
@@ -158,6 +183,27 @@ public class LessonServiceImplement implements LessonService {
                         "Khóa học với id " + updateLesson.getCourseId() + " không tồn tại."
                 ));
 
+        // Xử lý content
+        String contentToSave;
+        if (updateLesson.getVideoFile() != null && !updateLesson.getVideoFile().isEmpty()) {
+            // Upload video lên S3 -> trả về URL
+            try {
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  updateLesson.getVideoFile().getOriginalFilename();
+                contentToSave = s3Service.uploadBytes(
+                        updateLesson.getVideoFile().getBytes(),
+                        fileKey,
+                        updateLesson.getVideoFile().getContentType()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("Upload video thất bại", e);
+            }
+        } else {
+            if (updateLesson.getContent() == null || updateLesson.getContent().isBlank()) {
+                throw new BadRequestException("Content là bắt buộc nếu không upload video.");
+            }
+            contentToSave = updateLesson.getContent();
+        }
+
         // Cập nhật duration cho course (nếu thay đổi)
         if (!Objects.equals(existing.getDuration(), updateLesson.getDuration())) {
             int oldDuration = existing.getDuration();
@@ -166,7 +212,7 @@ public class LessonServiceImplement implements LessonService {
         }
 
         existing.setTitle(updateLesson.getTitle());
-        existing.setContent(updateLesson.getContent());
+        existing.setContent(contentToSave);
         existing.setContentType(updateLesson.getContentType());
         existing.setDuration(updateLesson.getDuration());
         existing.setRequireRobot(updateLesson.getRequireRobot());
@@ -214,9 +260,24 @@ public class LessonServiceImplement implements LessonService {
             existing.setTitle(patchLesson.getTitle());
         }
 
-        if (patchLesson.getContent() != null) {
+        if (patchLesson.getVideoFile() != null && !patchLesson.getVideoFile().isEmpty()) {
+            // upload file lên S3, trả về URL
+            String videoUrl;
+            try {
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  patchLesson.getVideoFile().getOriginalFilename();
+                videoUrl = s3Service.uploadBytes(
+                        patchLesson.getVideoFile().getBytes(),
+                        fileKey,
+                        patchLesson.getVideoFile().getContentType()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("Upload video thất bại", e);
+            }
+            existing.setContent(videoUrl);
+        } else if (patchLesson.getContent() != null) {
             existing.setContent(patchLesson.getContent());
         }
+
         if (patchLesson.getContentType() != null) {
             existing.setContentType(patchLesson.getContentType());
         }

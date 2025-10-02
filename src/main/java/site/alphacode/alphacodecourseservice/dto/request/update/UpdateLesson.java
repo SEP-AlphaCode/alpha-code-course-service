@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -26,8 +27,9 @@ public class UpdateLesson {
         @Size(max = 100, message = "ContentType không được dài quá 100 ký tự")
         private String contentType;
 
-        @NotBlank(message = "Nội dung bài học là bắt buộc")
-        private String content;
+        private String content; // text hoặc URL
+
+        private MultipartFile videoFile; // nếu update video
 
         @NotNull(message = "Cờ requireRobot là bắt buộc")
         private Boolean requireRobot;

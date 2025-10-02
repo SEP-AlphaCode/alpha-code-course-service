@@ -112,7 +112,7 @@ public class CourseServiceImplement implements CourseService {
         course.setStatus(1);
         try {
             if (createCourse.getImage() != null && !createCourse.getImage().isEmpty()) {
-                String fileKey = "courses/" + createCourse.getImage().getOriginalFilename();
+                String fileKey = "courses/" + System.currentTimeMillis() + "_" +  createCourse.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(createCourse.getImage().getBytes(), fileKey, createCourse.getImage().getContentType());
                 course.setImageUrl(imageUrl);
             }
@@ -159,7 +159,7 @@ public class CourseServiceImplement implements CourseService {
         // Xử lý ảnh (PUT => bắt buộc có image file hoặc imageUrl)
         if (updateCourse.getImage() != null && !updateCourse.getImage().isEmpty()) {
             try {
-                String fileKey = "courses/" + updateCourse.getImage().getOriginalFilename();
+                String fileKey = "courses/" + System.currentTimeMillis() + "_" +  updateCourse.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         updateCourse.getImage().getBytes(),
                         fileKey,
@@ -231,7 +231,7 @@ public class CourseServiceImplement implements CourseService {
         // Xử lý ảnh (PATCH => có thể có hoặc không)
         if (patchCourse.getImage() != null && !patchCourse.getImage().isEmpty()) {
             try {
-                String fileKey = "courses/" + patchCourse.getImage().getOriginalFilename();
+                String fileKey = "courses/" + System.currentTimeMillis() + "_" +  patchCourse.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         patchCourse.getImage().getBytes(),
                         fileKey,

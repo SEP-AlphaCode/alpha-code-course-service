@@ -99,7 +99,7 @@ public class BundleServiceImplement implements BundleService {
 
         try {
             if (createBundle.getCoverImage() != null && !createBundle.getCoverImage().isEmpty()) {
-                String fileKey = "bundles/" + createBundle.getCoverImage().getOriginalFilename();
+                String fileKey = "bundles/" + System.currentTimeMillis() + "_" +  createBundle.getCoverImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(createBundle.getCoverImage().getBytes(), fileKey, createBundle.getCoverImage().getContentType());
                 newBundle.setCoverImage(imageUrl);
             }
@@ -149,7 +149,7 @@ public class BundleServiceImplement implements BundleService {
         // Xử lý ảnh (PUT => bắt buộc có image file hoặc imageUrl)
         if (updateBundle.getImage() != null && !updateBundle.getImage().isEmpty()) {
             try {
-                String fileKey = "bundles/" + updateBundle.getImage().getOriginalFilename();
+                String fileKey = "bundles/" + System.currentTimeMillis() + "_" +  updateBundle.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         updateBundle.getImage().getBytes(),
                         fileKey,
@@ -221,7 +221,7 @@ public class BundleServiceImplement implements BundleService {
         // Xử lý ảnh (PATCH => có thể không có image file và imageUrl)
         if (patchBundle.getImage() != null && !patchBundle.getImage().isEmpty()) {
             try {
-                String fileKey = "bundles/" + patchBundle.getImage().getOriginalFilename();
+                String fileKey = "bundles/" + System.currentTimeMillis() + "_" +  patchBundle.getImage().getOriginalFilename();
                 String imageUrl = s3Service.uploadBytes(
                         patchBundle.getImage().getBytes(),
                         fileKey,

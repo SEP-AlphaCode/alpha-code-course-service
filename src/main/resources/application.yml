@@ -38,6 +38,11 @@ spring:
       max-request-size: 50MB
 
 grpc:
+  server:
+    port: ${GRPC_COURSE_SERVICE_PORT}
+    address: 0.0.0.0
+    security:
+      enabled: false  # dùng TLS=true nếu cần
   client:
     alpha-user-service:
       address: static://${GRPC_USER_SERVICE_BASE_URL}:${GRPC_USER_SERVICE_PORT}

@@ -114,10 +114,6 @@
             <artifactId>grpc-services</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.grpc</groupId>
-            <artifactId>spring-grpc-server-web-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
@@ -153,11 +149,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.grpc</groupId>
-            <artifactId>spring-grpc-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
@@ -186,15 +177,39 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.9</version>
         </dependency>
+
+        <!-- gRPC dependencies -->
         <dependency>
-            <groupId>org.springframework.grpc</groupId>
-            <artifactId>spring-grpc-client-spring-boot-starter</artifactId>
+            <groupId>net.devh</groupId>
+            <artifactId>grpc-server-spring-boot-starter</artifactId>
+            <version>2.15.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>net.devh</groupId>
-            <artifactId>grpc-spring-boot-starter</artifactId>
+            <artifactId>grpc-client-spring-boot-starter</artifactId>
             <version>2.15.0.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>1.58.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.58.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.58.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.3</version>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

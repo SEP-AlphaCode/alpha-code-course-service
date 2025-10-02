@@ -8,7 +8,7 @@ import user.User.GetAccountRequest;
 @Service
 public class UserServiceClient {
 
-    @GrpcClient("user-service")
+    @GrpcClient("alpha-user-service")
     private UserServiceGrpc.UserServiceBlockingStub blockingStub;
 
     public AccountInformation getAccount(String accountId) {

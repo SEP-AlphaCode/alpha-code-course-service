@@ -36,6 +36,17 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USERNAME}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+
+    listener:
+      simple:
+        concurrency: 2          # số thread consumer
+        max-concurrency: 5
+        acknowledge-mode: auto
 
 grpc:
   server:

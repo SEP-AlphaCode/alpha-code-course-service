@@ -1,8 +1,12 @@
 package site.alphacode.alphacodecourseservice.consumer;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
+import site.alphacode.alphacodecourseservice.entity.AccountCourse;
+import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 import site.alphacode.alphacodecourseservice.service.CourseService;
 
 import java.util.Map;
@@ -10,9 +14,10 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CourseConsumer {
 
-    private final CourseService courseService;
+    private final AccountCourseService accountCourseService;
 
     @RabbitListener(queues = "course.create.queue")
     public void handleCoursePayment(Map<String, Object> message) {
@@ -20,9 +25,15 @@ public class CourseConsumer {
         UUID accountId = UUID.fromString((String) message.get("accountId"));
         String courseId = (String) message.get("courseId");
 
+        log.info("Recieved request to create account course for orderCode: {}, accountId: {}, courseId: {}", orderCode, accountId, courseId);
+
         System.out.println("Received course payment message: " + message);
 
+        CreateAccountCourse createAccountCourse = new CreateAccountCourse();
+        createAccountCourse.setAccountId(accountId);
+        createAccountCourse.setCourseId(UUID.fromString(courseId));
+
         // Tạo khóa học cho user
-        courseService.createCourseForUser(accountId, courseId, orderCode);
+        accountCourseService.create(createAccountCourse);
     }
 }

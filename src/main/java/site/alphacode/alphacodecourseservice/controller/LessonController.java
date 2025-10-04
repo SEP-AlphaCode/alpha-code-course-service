@@ -31,14 +31,14 @@ public class LessonController {
 
     @GetMapping("/get-by-course/{courseId}")
     @Operation(summary = "Get all active lessons by course id")
-    public PagedResult<LessonDto> getActiveLessonsByCourseId(@PathVariable UUID courseId, Integer page, Integer size) {
+    public PagedResult<LessonDto> getActiveLessonsByCourseId(@PathVariable UUID courseId,@RequestParam(defaultValue = "1") Integer page,@RequestParam(defaultValue = "10") Integer size) {
         return lessonService.getActiveLessonsByCourseId(courseId, page, size);
     }
 
     @GetMapping("/all-with-solution-by-course/{courseId}")
     @Operation(summary = "Get all lessons with solutions by course id (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionsByCourseId(@PathVariable UUID courseId, Integer page, Integer size) {
+    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionsByCourseId(@PathVariable UUID courseId,@RequestParam(defaultValue = "1") Integer page,@RequestParam(defaultValue = "10") Integer size) {
         return lessonService.getAllLessonsWithSolutionByCourseId(courseId, page, size);
     }
 

@@ -24,8 +24,6 @@ public class LessonWithSolution extends BaseEntityDto implements Serializable {
 
     private String title;
 
-    private String contentType;
-
     private String content;
 
     private Integer duration;

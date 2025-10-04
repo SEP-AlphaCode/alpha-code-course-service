@@ -18,7 +18,6 @@ public class LearnLesson {
     private UUID id;
     private String title;
     private String content;
-    private String contentType;
     private Integer duration;
     private Boolean requireRobot;
     private Integer type;

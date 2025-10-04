@@ -133,7 +133,6 @@ public class LessonServiceImplement implements LessonService {
 
         Lesson newLesson = new Lesson();
         newLesson.setContent(contentToSave);
-        newLesson.setContentType(createLesson.getContentType());
         newLesson.setCourseId(createLesson.getCourseId());
         newLesson.setDuration(createLesson.getDuration());
         newLesson.setOrderNumber(maxOrder + 1);
@@ -213,7 +212,6 @@ public class LessonServiceImplement implements LessonService {
 
         existing.setTitle(updateLesson.getTitle());
         existing.setContent(contentToSave);
-        existing.setContentType(updateLesson.getContentType());
         existing.setDuration(updateLesson.getDuration());
         existing.setRequireRobot(updateLesson.getRequireRobot());
         existing.setSolution(updateLesson.getSolution());
@@ -278,9 +276,6 @@ public class LessonServiceImplement implements LessonService {
             existing.setContent(patchLesson.getContent());
         }
 
-        if (patchLesson.getContentType() != null) {
-            existing.setContentType(patchLesson.getContentType());
-        }
         if (patchLesson.getDuration() != null) {
             existing.setDuration(patchLesson.getDuration());
             durationChanged = true;

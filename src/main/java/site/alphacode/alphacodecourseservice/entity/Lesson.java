@@ -30,9 +30,6 @@ public class Lesson extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "content_type", length = 100, nullable = false)
-    private String contentType;
-
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
@@ -43,7 +40,7 @@ public class Lesson extends BaseEntity {
     private Boolean requireRobot = false;
 
     @Type(JsonType.class)
-    @Column(name = "solution", columnDefinition = "jsonb", nullable = false)
+    @Column(name = "solution", columnDefinition = "jsonb")
     private JsonNode solution;
 
     @Column(name = "order_number", nullable = false)

@@ -25,10 +25,6 @@ public class CreateLesson {
     @Size(max = 255, message = "Tiêu đề bài học không được vượt quá 255 ký tự")
     private String title;
 
-    @NotBlank(message = "Loại nội dung là bắt buộc")
-    @Size(max = 100, message = "Loại nội dung không được vượt quá 100 ký tự")
-    private String contentType;
-
     private String content;
 
     private MultipartFile videoFile;
@@ -46,6 +42,5 @@ public class CreateLesson {
     @NotNull(message = "Loại bài học là bắt buộc")
     private Integer type;
 
-    @NotNull(message = "Dữ liệu giải pháp là bắt buộc")
     private JsonNode solution;
 }

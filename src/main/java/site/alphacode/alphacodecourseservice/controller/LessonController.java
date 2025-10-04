@@ -2,6 +2,7 @@ package site.alphacode.alphacodecourseservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,21 +53,21 @@ public class LessonController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution create(@RequestBody CreateLesson createLesson) {
+    public LessonWithSolution create(@Valid @ModelAttribute @RequestBody CreateLesson createLesson) {
         return lessonService.create(createLesson);
     }
 
     @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution update(@PathVariable UUID lessonId, @RequestBody UpdateLesson updateLesson) {
+    public LessonWithSolution update(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody UpdateLesson updateLesson) {
         return lessonService.update(lessonId, updateLesson);
     }
 
     @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution patch(@PathVariable UUID lessonId, @RequestBody PatchLesson patchLesson) {
+    public LessonWithSolution patch(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody PatchLesson patchLesson) {
         return lessonService.patch(lessonId, patchLesson);
     }
 

@@ -2,6 +2,7 @@ package site.alphacode.alphacodecourseservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,21 +39,21 @@ public class BundleController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create new bundle")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public BundleDto createBundle(@RequestBody CreateBundle createBundle) {
+    public BundleDto createBundle(@Valid @ModelAttribute @RequestBody CreateBundle createBundle) {
         return bundleService.create(createBundle);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update bundle by id")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public BundleDto updateBundle(@PathVariable UUID id, @RequestBody UpdateBundle updateBundle) {
+    public BundleDto updateBundle(@PathVariable UUID id,@Valid @ModelAttribute @RequestBody UpdateBundle updateBundle) {
         return bundleService.update(id, updateBundle);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch bundle by id")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public BundleDto patchBundle(@PathVariable UUID id, @RequestBody PatchBundle patchBundle) {
+    public BundleDto patchBundle(@PathVariable UUID id,@Valid @ModelAttribute @RequestBody PatchBundle patchBundle) {
         return bundleService.patch(id, patchBundle);
     }
 

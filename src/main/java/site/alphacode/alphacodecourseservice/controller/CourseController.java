@@ -26,7 +26,7 @@ public class CourseController {
     @GetMapping("/{id}")
     @Operation(summary = "Get active course by id")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public CourseDto getActiveCourseById(UUID id) {
+    public CourseDto getActiveCourseById(@PathVariable UUID id) {
        return courseService.getActiveCourseById(id);
     }
 

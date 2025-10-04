@@ -21,7 +21,7 @@ public class SubmissionController {
 
     @GetMapping("/by-account-lesson-id/{accountLessonId}")
     @Operation(summary = "Get newest submission by account lesson ID")
-    public SubmissionDto getByAccountLessonId(UUID accountLessonId) {
+    public SubmissionDto getByAccountLessonId(@PathVariable UUID accountLessonId) {
          return submissionService.getByAccountLessonId(accountLessonId);
     }
 

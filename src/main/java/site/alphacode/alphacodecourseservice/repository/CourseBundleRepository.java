@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface CourseBundleRepository extends JpaRepository<CourseBundle, UUID> {
     @Query("SELECT cb FROM CourseBundle cb WHERE cb.bundleId = :courseBundleId and cb.status = 1")
     List<CourseBundle> findByBundleId(@Param("bundleId") UUID bundleId);
+
+    List<UUID> findCourseIdsByBundleId(UUID bundleId);
 }

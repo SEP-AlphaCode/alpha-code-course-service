@@ -11,4 +11,5 @@ public interface AccountCourseService {
     AccountCourseDto create(CreateAccountCourse createAccountCourse);
     void delete(UUID id);
     List<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size);
+    List<AccountCourseDto> createFromBundle(UUID accountId, UUID bundleId);
 }

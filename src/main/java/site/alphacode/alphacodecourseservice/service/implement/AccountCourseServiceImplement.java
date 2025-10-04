@@ -16,10 +16,12 @@ import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.mapper.AccountCourseMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
+import site.alphacode.alphacodecourseservice.repository.CourseBundleRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +30,7 @@ import java.util.UUID;
 public class AccountCourseServiceImplement implements AccountCourseService {
     private final AccountCourseRepository repository;
     private final LessonRepository lessonRepository;
+    private final CourseBundleRepository courseBundleRepository;
 
     @Override
     @Transactional
@@ -82,4 +85,38 @@ public class AccountCourseServiceImplement implements AccountCourseService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
         repository.softDeleteById(accountCourse.getId());
     }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "account_courses", allEntries = true)
+    public List<AccountCourseDto> createFromBundle(UUID accountId, UUID bundleId) {
+        // Giả sử bạn có repository CourseBundleRepository để lấy danh sách course trong bundle
+        List<UUID> courseIdsInBundle = courseBundleRepository.findCourseIdsByBundleId(bundleId);
+
+        List<AccountCourseDto> createdCourses = new ArrayList<>();
+
+        for (UUID courseId : courseIdsInBundle) {
+            // Bỏ qua khóa học đã có
+            if (repository.existsByAccountIdAndCourseId(accountId, courseId)) {
+                continue;
+            }
+
+            AccountCourse accountCourse = new AccountCourse();
+            accountCourse.setAccountId(accountId);
+            accountCourse.setCourseId(courseId);
+            accountCourse.setStatus(1);
+            accountCourse.setPurchaseDate(LocalDateTime.now());
+            accountCourse.setLastAccessed(null);
+            accountCourse.setCompletedLesson(0);
+            accountCourse.setCompleted(false);
+            accountCourse.setProgressPercent(0);
+            accountCourse.setTotalLesson(lessonRepository.countByCourseId(courseId));
+
+            accountCourse = repository.save(accountCourse);
+            createdCourses.add(AccountCourseMapper.toDto(accountCourse));
+        }
+
+        return createdCourses;
+    }
+
 }

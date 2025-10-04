@@ -41,4 +41,12 @@ public class AccountCourseController {
         return accountCourseService.create(createAccountCourse);
     }
 
+    @PostMapping("/from-bundle")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create new account courses from bundle")
+    @PreAuthorize("hasAuthority('ROLE_Admin')")
+    public List<AccountCourseDto> createAccountCoursesFromBundle(@RequestParam UUID accountId, @RequestParam UUID bundleId) {
+        return accountCourseService.createFromBundle(accountId, bundleId);
+    }
+
 }

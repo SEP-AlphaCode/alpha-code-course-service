@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
@@ -41,7 +42,7 @@ public class AccountCourseController {
         return accountCourseService.create(createAccountCourse);
     }
 
-    @PostMapping("/from-bundle")
+    @PostMapping(value = "/from-bundle", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create new account courses from bundle")
     @PreAuthorize("hasAuthority('ROLE_Admin')")

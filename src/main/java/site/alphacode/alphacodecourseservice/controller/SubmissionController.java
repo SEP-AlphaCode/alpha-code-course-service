@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
@@ -25,7 +26,7 @@ public class SubmissionController {
          return submissionService.getByAccountLessonId(accountLessonId);
     }
 
-    @PostMapping()
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new submission")
     @PreAuthorize("hasAuthority('ROLE_User')")
     public SubmissionDto createSubmission(CreateSubmission createSubmission) {

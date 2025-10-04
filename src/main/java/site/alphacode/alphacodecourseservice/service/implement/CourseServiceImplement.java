@@ -109,7 +109,7 @@ public class CourseServiceImplement implements CourseService {
         course.setTotalDuration(0);
         course.setCreatedDate(LocalDateTime.now());
         course.setLastUpdated(null);
-        course.setStatus(1);
+        course.setStatus(2); // Mặc định tạo mới là Inactive
         try {
             if (createCourse.getImage() != null && !createCourse.getImage().isEmpty()) {
                 String fileKey = "courses/" + System.currentTimeMillis() + "_" +  createCourse.getImage().getOriginalFilename();

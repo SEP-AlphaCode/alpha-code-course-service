@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
@@ -48,21 +49,21 @@ public class LessonController {
         return lessonService.getLessonWithSolutionById(id);
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(@RequestBody CreateLesson createLesson) {
         return lessonService.create(createLesson);
     }
 
-    @PutMapping("/{lessonId}")
+    @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution update(@PathVariable UUID lessonId, @RequestBody UpdateLesson updateLesson) {
         return lessonService.update(lessonId, updateLesson);
     }
 
-    @PatchMapping("/{lessonId}")
+    @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution patch(@PathVariable UUID lessonId, @RequestBody PatchLesson patchLesson) {

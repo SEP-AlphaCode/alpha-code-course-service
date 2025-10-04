@@ -19,21 +19,22 @@ public class CourseConsumer {
 
     private final AccountCourseService accountCourseService;
 
-    @RabbitListener(queues = "course.create.queue")
+    @RabbitListener(
+            queues = "course.create.queue",
+            containerFactory = "rabbitListenerContainerFactory"
+    )
     public void handleCoursePayment(Map<String, Object> message) {
         Long orderCode = ((Number) message.get("orderCode")).longValue();
         UUID accountId = UUID.fromString((String) message.get("accountId"));
         String courseId = (String) message.get("courseId");
 
-        log.info("Recieved request to create account course for orderCode: {}, accountId: {}, courseId: {}", orderCode, accountId, courseId);
-
-        System.out.println("Received course payment message: " + message);
+        log.info("Received course payment: orderCode={}, accountId={}, courseId={}", orderCode, accountId, courseId);
 
         CreateAccountCourse createAccountCourse = new CreateAccountCourse();
         createAccountCourse.setAccountId(accountId);
         createAccountCourse.setCourseId(UUID.fromString(courseId));
 
-        // Tạo khóa học cho user
         accountCourseService.create(createAccountCourse);
     }
+
 }

@@ -6,6 +6,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
+import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 import site.alphacode.alphacodecourseservice.service.CourseService;
 
@@ -34,7 +35,18 @@ public class CourseConsumer {
         createAccountCourse.setAccountId(accountId);
         createAccountCourse.setCourseId(UUID.fromString(courseId));
 
-        accountCourseService.create(createAccountCourse);
+        try {
+            accountCourseService.create(createAccountCourse);
+            log.info("Course purchase recorded successfully for accountId={}, courseId={}", accountId, courseId);
+        } catch (ConflictException e) {
+            // Bỏ qua nếu khóa học đã được mua trước đó
+            log.warn("Course already purchased for accountId={}, courseId={}, skipping.", accountId, courseId);
+        } catch (Exception e) {
+            log.error("Error processing course payment for accountId={}, courseId={}", accountId, courseId, e);
+            // Có thể rethrow nếu muốn Spring retry
+            throw e;
+        }
     }
+
 
 }

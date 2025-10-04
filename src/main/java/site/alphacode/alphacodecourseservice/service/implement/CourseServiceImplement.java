@@ -107,6 +107,7 @@ public class CourseServiceImplement implements CourseService {
         course.setRequireLicense(createCourse.getRequireLicense());
         course.setSlug(SlugHelper.toSlug(createCourse.getName()));
         course.setTotalDuration(0);
+        course.setTotalLessons(0);
         course.setCreatedDate(LocalDateTime.now());
         course.setLastUpdated(null);
         course.setStatus(2); // Mặc định tạo mới là Inactive
@@ -154,7 +155,14 @@ public class CourseServiceImplement implements CourseService {
         existing.get().setRequireLicense(updateCourse.getRequireLicense());
         existing.get().setSlug(SlugHelper.toSlug(updateCourse.getName()));
         existing.get().setLastUpdated(LocalDateTime.now());
-        existing.get().setStatus(updateCourse.getStatus());
+        if (updateCourse.getStatus() != null && updateCourse.getStatus() == 1) {
+            if (existing.get().getTotalLessons() <= 0) {
+                throw new BadRequestException("Không thể active khóa học vì chưa có lesson nào.");
+            }
+        }
+
+
+
 
         // Xử lý ảnh (PUT => bắt buộc có image file hoặc imageUrl)
         if (updateCourse.getImage() != null && !updateCourse.getImage().isEmpty()) {
@@ -223,8 +231,10 @@ public class CourseServiceImplement implements CourseService {
         if (patchCourse.getRequireLicense() != null) {
             existing.get().setRequireLicense(patchCourse.getRequireLicense());
         }
-        if (patchCourse.getStatus() != null) {
-            existing.get().setStatus(patchCourse.getStatus());
+        if (patchCourse.getStatus() != null && patchCourse.getStatus() == 1) {
+            if (existing.get().getTotalLessons() <= 0) {
+                throw new BadRequestException("Không thể active khóa học vì chưa có lesson nào.");
+            }
         }
         existing.get().setLastUpdated(LocalDateTime.now());
 

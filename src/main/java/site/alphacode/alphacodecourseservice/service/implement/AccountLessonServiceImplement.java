@@ -41,7 +41,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
     @Override
     @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
       public Page<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(UUID courseId, UUID accountId, int page, int size) {
-            Pageable pageable = PageRequest.of(page - 1, size, Sort.by("lesson.order_number").ascending());
+            Pageable pageable = PageRequest.of(page, size, Sort.by("lesson.order_number").ascending());
             accountCourseRepository.updateLastAccessedByAccountIdAndCourseId(courseId, accountId,java.time.LocalDateTime.now());
             return accountLessonRepository.getLessonDurationAndTitleByCourseIdAndAccountId(courseId, accountId, pageable);
       }

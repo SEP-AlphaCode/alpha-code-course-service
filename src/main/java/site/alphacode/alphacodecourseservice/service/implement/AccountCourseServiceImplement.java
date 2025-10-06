@@ -69,7 +69,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Override
     @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
     public List<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page, size);
         Page<AccountCourse> pageResult = repository.findByAccountId(accountId, pageable);
         return pageResult.getContent()
                 .stream()

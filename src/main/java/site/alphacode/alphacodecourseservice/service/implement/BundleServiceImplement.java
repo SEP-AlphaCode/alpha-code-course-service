@@ -95,7 +95,7 @@ public class BundleServiceImplement implements BundleService {
         newBundle.setDiscountPrice(createBundle.getDiscountPrice());
         newBundle.setCreatedDate(LocalDateTime.now());
         newBundle.setLastUpdated(null);
-        newBundle.setStatus(1);
+        newBundle.setStatus(2);
 
         try {
             if (createBundle.getCoverImage() != null && !createBundle.getCoverImage().isEmpty()) {

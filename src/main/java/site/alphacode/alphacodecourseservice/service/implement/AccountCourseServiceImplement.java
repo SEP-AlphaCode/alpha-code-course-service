@@ -2,6 +2,7 @@ package site.alphacode.alphacodecourseservice.service.implement;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.mapper.AccountCourseMapper;
@@ -27,6 +29,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountCourseServiceImplement implements AccountCourseService {
     private final AccountCourseRepository repository;
     private final LessonRepository lessonRepository;
@@ -68,13 +71,11 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
-    public List<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public PagedResult<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
+        log.info(accountId.toString(), page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<AccountCourse> pageResult = repository.findByAccountId(accountId, pageable);
-        return pageResult.getContent()
-                .stream()
-                .map(AccountCourseMapper::toDto)
-                .toList();
+        return new PagedResult<>(pageResult.map(AccountCourseMapper::toDto));
     }
 
     @Override

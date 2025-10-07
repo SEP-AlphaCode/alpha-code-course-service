@@ -35,7 +35,6 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       private final AccountLessonRepository accountLessonRepository;
       private final AccountCourseRepository accountCourseRepository;
       private final LessonRepository lessonRepository;
-      private final CourseRepository courseRepository;
       private final CertificateRepository certificateRepository;
 
     @Override
@@ -83,7 +82,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       @Transactional
       @CachePut(value = "account_lesson_with_lesson", key = "{#accountLessonId}")
       @CacheEvict(value = "account_lessons", allEntries = true)
-      public AccountLessonWithLesson markComplete(UUID accountLessonId) {
+      public void markComplete(UUID accountLessonId) {
             var accountLesson = accountLessonRepository.findById(accountLessonId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài học: " + accountLessonId));
             if (accountLesson.getCompletedAt() != null) {
@@ -121,6 +120,6 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                   }
             }
 
-            return AccountLessonMapper.toAccountLessonWithLesson(updated, lesson);
+          AccountLessonMapper.toAccountLessonWithLesson(updated, lesson);
       }
 }

@@ -12,6 +12,6 @@ public interface AccountLessonService {
     Page<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(UUID courseId, UUID accountId, int page, int size);
     Optional<AccountLessonWithLesson> getAccountLessionWithLessonById(UUID accountLessonId);
     AccountLessonWithLesson create(CreateAccountLesson createAccountLesson);
-    AccountLessonWithLesson markComplete(UUID accountLessonId);
+    void markComplete(UUID accountLessonId);
 }
 

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
-import site.alphacode.alphacodecourseservice.entity.Bundle;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -24,11 +23,11 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
 
     @Modifying
     @Query("UPDATE AccountCourse a SET a.lastAccessed = :time WHERE a.id = :id")
-    int updateLastAccessed(@Param("id") UUID id, @Param("time") LocalDateTime time);
+    void updateLastAccessed(@Param("id") UUID id, @Param("time") LocalDateTime time);
 
     @Modifying
     @Query("UPDATE AccountCourse a SET a.lastAccessed = :time WHERE a.courseId = :courseId AND a.accountId = :accountId")
-    int updateLastAccessedByAccountIdAndCourseId(@Param("courseId") UUID courseId, @Param("accountId") UUID accountId, @Param("time") LocalDateTime time);
+    void updateLastAccessedByAccountIdAndCourseId(@Param("courseId") UUID courseId, @Param("accountId") UUID accountId, @Param("time") LocalDateTime time);
 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END " +
             "FROM AccountCourse a " +

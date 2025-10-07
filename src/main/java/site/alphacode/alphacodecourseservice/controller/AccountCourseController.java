@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class AccountCourseController {
 
     @GetMapping("/by-account/{accountId}")
     @Operation(summary = "Get list of account courses by account id")
-    public List<AccountCourseDto> getAccountCoursesByAccountId(@PathVariable UUID accountId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+    public PagedResult<AccountCourseDto> getAccountCoursesByAccountId(@PathVariable UUID accountId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
         return accountCourseService.getAccountCoursesByAccountId(accountId, page, size);
     }
 

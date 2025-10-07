@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface AccountCourseRepository extends JpaRepository<AccountCourse, UUID> {
     @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = :accountId AND ac.status = 1" +
             " ORDER BY ac.purchaseDate DESC ")
-    Page<AccountCourse> findByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
+    Page<AccountCourse> findActiveByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
 
     @Modifying
     @Query("UPDATE AccountCourse a SET a.status = 0 WHERE a.id = :id")

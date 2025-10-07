@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "accounts_course")
+@Table(name = "account_course")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

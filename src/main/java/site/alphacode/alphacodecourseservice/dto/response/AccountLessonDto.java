@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
 import site.alphacode.alphacodecourseservice.enums.CategoryEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class AccountLessonDto {
+public class AccountLessonDto implements Serializable {
     private UUID id;
 
     private UUID accountId;

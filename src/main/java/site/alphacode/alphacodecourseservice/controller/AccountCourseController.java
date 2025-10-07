@@ -17,22 +17,21 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/account-courses")
 @RequiredArgsConstructor
-@Tag(name = "Account Courses")
+@Tag(name = "Account Courses", description = "Account Course management APIs")
 public class AccountCourseController {
     private final AccountCourseService accountCourseService;
+
+    @GetMapping("/by-account/{accountId}")
+    @Operation(summary = "Get list of account courses by account id")
+    public List<AccountCourseDto> getAccountCoursesByAccountId(@PathVariable UUID accountId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
+        return accountCourseService.getAccountCoursesByAccountId(accountId, page, size);
+    }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get account course by id")
     public AccountCourseDto getAccountCourseById(@PathVariable UUID id) {
         return accountCourseService.getAccountCourseById(id);
     }
-
-    @GetMapping
-    @Operation(summary = "Get list of account courses by account id")
-    public List<AccountCourseDto> getAccountCoursesByAccountId(@RequestParam UUID accountId, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "10") int size) {
-        return accountCourseService.getAccountCoursesByAccountId(accountId, page, size);
-    }
-
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

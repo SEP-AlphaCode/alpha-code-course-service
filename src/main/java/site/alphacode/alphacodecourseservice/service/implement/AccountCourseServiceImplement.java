@@ -72,14 +72,13 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Override
     @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
     public PagedResult<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
-        log.info("accountId={}, page={}, size={}", accountId, page, size);
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<AccountCourse> pageResult = repository.findActiveByAccountId(accountId, pageable);
         return new PagedResult<>(pageResult.map(AccountCourseMapper::toDto));
     }
 
     @Override
-    @Transactional
+    @Transactional  
     @CacheEvict(value = "account_course", key = "{#id}")
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)

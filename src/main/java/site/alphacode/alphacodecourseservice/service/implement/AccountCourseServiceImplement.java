@@ -78,7 +78,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     }
 
     @Override
-    @Transactional  
+    @Transactional
     @CacheEvict(value = "account_course", key = "{#id}")
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)

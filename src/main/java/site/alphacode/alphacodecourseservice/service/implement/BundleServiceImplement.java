@@ -194,11 +194,6 @@ public class BundleServiceImplement implements BundleService {
 
         if (patchBundle.getPrice() != null) {
             existing.setPrice(patchBundle.getPrice());
-            if (existing.getDiscountPrice() != null) {
-                if (existing.getDiscountPrice().compareTo(existing.getPrice()) >= 0) {
-                    throw new BadRequestException("Giá khuyến mãi phải nhỏ hơn giá gốc");
-                }
-            }
         }
 
         if (patchBundle.getDiscountPrice() != null) {

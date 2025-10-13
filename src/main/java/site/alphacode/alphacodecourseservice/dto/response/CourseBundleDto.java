@@ -11,13 +11,14 @@ import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
 import site.alphacode.alphacodecourseservice.enums.CourseBundleEnum;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class CourseBundleDto extends BaseEntityDto {
+public class CourseBundleDto extends BaseEntityDto implements Serializable {
     private UUID id;
 
     private UUID courseId;

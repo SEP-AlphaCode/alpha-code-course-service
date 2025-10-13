@@ -9,29 +9,29 @@ import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourseBund
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourseBundle;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourseBundle;
 import site.alphacode.alphacodecourseservice.dto.response.CourseBundleDto;
-import site.alphacode.alphacodecourseservice.entity.Course;
+import site.alphacode.alphacodecourseservice.dto.response.CourseDto;
 import site.alphacode.alphacodecourseservice.service.CourseBundleService;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/course-bundle")
+@RequestMapping("/api/v1/course-bundles")
 @RequiredArgsConstructor
-@Tag(name = "Course Bundle", description = "Course Bundle management APIs")
+@Tag(name = "Course Bundles", description = "Course Bundle management APIs")
 public class CourseBundleController {
     private final CourseBundleService courseBundleService;
 
     @GetMapping("/get-all-course-by-bundle/{bundleId}")
     @Operation(summary = "Get all courses by bundle ID")
-    public List<Course> getAllCourseByBundleId(@PathVariable UUID bundleId) {
+    public List<CourseDto> getAllCourseByBundleId(@PathVariable UUID bundleId) {
         return courseBundleService.courseBundle(bundleId);
     }
 
     @PostMapping
     @Operation(summary = "Assign course to bundle")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public CourseBundleDto create(CreateCourseBundle request) {
+    public CourseBundleDto create(@RequestBody CreateCourseBundle request) {
         return courseBundleService.create(request);
     }
 

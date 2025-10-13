@@ -11,7 +11,6 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class CreateCourseBundle {
     @NotNull(message = "BundleId không được để trống")
     private UUID bundleId;

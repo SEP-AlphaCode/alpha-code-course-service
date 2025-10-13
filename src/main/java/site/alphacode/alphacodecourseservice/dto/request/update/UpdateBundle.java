@@ -30,8 +30,6 @@ public class UpdateBundle {
     @Min(value = 1, message = "Số tiền phải lớn hơn 0")
     private Integer price;
 
-    @NotNull(message = "Giá giảm là bắt buộc")
-    @Min(value = 1, message = "Số tiền giảm phải lớn hơn 0")
     private Integer discountPrice;
 
     @Schema(description = "URL ảnh cũ, nếu giữ nguyên")

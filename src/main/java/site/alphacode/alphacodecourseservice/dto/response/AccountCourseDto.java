@@ -42,6 +42,12 @@ public class AccountCourseDto implements Serializable {
 
     private LocalDateTime lastAccessed;
 
+    private String slug;
+
+    private String imageUrl;
+
+    private String name;
+
     @JsonProperty(value = "statusText", access = JsonProperty.Access.READ_ONLY)
     public String getStatusText() {
         return AccountCourseEnum.fromCode(this.status);

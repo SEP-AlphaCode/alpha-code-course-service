@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.service.AccountLessonService;
 
 import java.util.Optional;
@@ -28,11 +29,11 @@ public class AccountLessonController {
         return accountLessonService.getAccountLessionWithLessonById(id);
     }
 
-    @GetMapping("/account-lessons")
+    @GetMapping("")
     @Operation(summary = "Get account lessons with duration and title by courseId and accountId")
     @PreAuthorize("hasAuthority('ROLE_User')")
-    public Page<AccountLessonWithDuration> getAccountLessonsWithLessonDurationAndTitleByCourseIdAndAccountId(@RequestParam UUID courseId, @RequestParam UUID accountId, @RequestParam(value = "page", defaultValue = "1") int page,
-                                                                                                             @RequestParam(value = "size", defaultValue = "10") int size) {
+    public PagedResult<AccountLessonWithDuration> getAccountLessonsWithLessonDurationAndTitleByCourseIdAndAccountId(@RequestParam UUID courseId, @RequestParam UUID accountId, @RequestParam(value = "page", defaultValue = "1") int page,
+                                                                                                                    @RequestParam(value = "size", defaultValue = "10") int size) {
         return accountLessonService.getLessonDurationAndTitleByCourseIdAndAccountId(courseId, accountId, page, size);
     }
 

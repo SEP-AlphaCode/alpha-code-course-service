@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
+import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 import site.alphacode.alphacodecourseservice.entity.AccountLesson;
 import site.alphacode.alphacodecourseservice.entity.Certificate;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
@@ -39,14 +41,17 @@ public class AccountLessonServiceImplement implements AccountLessonService {
 
     @Override
     @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
-      public Page<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(UUID courseId, UUID accountId, int page, int size) {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("lesson.order_number").ascending());
+    @Transactional
+    public PagedResult<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(UUID courseId, UUID accountId, int page, int size) {
+            Pageable pageable = PageRequest.of(page - 1, size);
             accountCourseRepository.updateLastAccessedByAccountIdAndCourseId(courseId, accountId,java.time.LocalDateTime.now());
-            return accountLessonRepository.getLessonDurationAndTitleByCourseIdAndAccountId(courseId, accountId, pageable);
+            Page<AccountLessonWithDuration> pageResult = accountLessonRepository.getLessonDurationAndTitleByCourseIdAndAccountId(courseId, accountId, pageable);
+            return new PagedResult<>(pageResult);
       }
 
       @Override
       @Cacheable(value = "account_lesson_with_lesson", key = "{#accountLessonId}")
+      @Transactional
       public Optional<AccountLessonWithLesson> getAccountLessionWithLessonById(UUID accountLessonId) {
             var accountLesson = accountLessonRepository.findById(accountLessonId);
             if (accountLesson.isEmpty()) {

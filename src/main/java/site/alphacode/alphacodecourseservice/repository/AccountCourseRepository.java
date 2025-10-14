@@ -13,8 +13,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AccountCourseRepository extends JpaRepository<AccountCourse, UUID> {
-    @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = :accountId AND ac.status = 1" +
-            " ORDER BY ac.purchaseDate DESC ")
+    @Query("""
+    SELECT ac FROM AccountCourse ac
+    JOIN FETCH ac.course
+    WHERE ac.accountId = :accountId
+      AND ac.status = 1
+    ORDER BY ac.purchaseDate DESC
+""")
     Page<AccountCourse> findActiveByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
 
     @Modifying

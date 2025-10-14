@@ -19,6 +19,12 @@ public class AccountCourseMapper {
         dto.setCompletedLesson(entity.getCompletedLesson());
         dto.setLastAccessed(entity.getLastAccessed());
         dto.setTotalLesson(entity.getTotalLesson());
+        if (entity.getCourse() != null) {
+            dto.setSlug(entity.getCourse().getSlug());
+            dto.setImageUrl(entity.getCourse().getImageUrl());
+            dto.setName(entity.getCourse().getName());
+        }
+
 
         return dto;
     }

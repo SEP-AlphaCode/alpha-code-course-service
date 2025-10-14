@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -41,4 +42,8 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
 
     @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = : accountId AND ac.courseId = : courseId AND ac.status = 1")
     Optional<AccountCourse> findByAccountIdAndCourseId(@Param("accountId") UUID accountId,@Param("courseId") UUID courseId);
+
+    @Query("SELECT ac.courseId FROM AccountCourse ac " +
+            "WHERE ac.accountId = :accountId AND ac.courseId IN :courseIds AND ac.status = 1")
+    List<UUID> findOwnedCourseIds(UUID accountId, List<UUID> courseIds);
 }

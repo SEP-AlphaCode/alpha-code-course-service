@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package account_course;
+
+
+// Service cho phép kiểm tra quyền sở hữu khóa học hoặc gói khóa học
+service AccountCourseService {
+  // Kiểm tra 1 khóa học cụ thể đã được sở hữu chưa
+  rpc CheckOwnCourse(CheckOwnCourseRequest) returns (CheckOwnCourseResponse);
+
+  // Kiểm tra danh sách khóa học trong bundle
+  rpc CheckOwnCoursesInBundle(CheckOwnCoursesInBundleRequest) returns (CheckOwnCoursesInBundleResponse);
+}
+
+// --- Request / Response ---
+
+// Kiểm tra 1 khóa học
+message CheckOwnCourseRequest {
+  string accountId = 1;
+  string courseId = 2;
+}
+
+message CheckOwnCourseResponse {
+  bool owned = 1;
+}
+
+// Kiểm tra danh sách khóa học trong bundle
+message CheckOwnCoursesInBundleRequest {
+  string accountId = 1;
+  repeated string courseIds = 2;
+}
+
+message CheckOwnCoursesInBundleResponse {
+  repeated string ownedCourseIds = 1;
+}

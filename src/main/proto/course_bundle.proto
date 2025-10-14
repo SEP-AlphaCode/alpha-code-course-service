@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "course_bundle";
+option java_outer_classname = "CourseBundleProto";
+
+service CourseBundleService {
+  rpc GetCourseIdsByBundle(GetCourseIdsByBundleRequest) returns (GetCourseIdsByBundleResponse);
+}
+
+message GetCourseIdsByBundleRequest {
+  string bundleId = 1;
+}
+
+message GetCourseIdsByBundleResponse {
+  repeated string courseIds = 1;
+}

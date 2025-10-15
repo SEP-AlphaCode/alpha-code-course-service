@@ -50,4 +50,12 @@ public class AccountCourseController {
         return accountCourseService.createFromBundle(accountId, bundleId);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete account course")
+    @PreAuthorize("hasAuthority('ROLE_Admin')")
+    public void deleteAccountCourse(@PathVariable UUID id) {
+        accountCourseService.delete(id);
+    }
+
 }

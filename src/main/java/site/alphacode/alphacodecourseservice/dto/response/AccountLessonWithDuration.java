@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class AccountLessonWithDuration {
+public class AccountLessonWithDuration implements Serializable {
     private UUID id;
     private String title;
     private Integer duration;

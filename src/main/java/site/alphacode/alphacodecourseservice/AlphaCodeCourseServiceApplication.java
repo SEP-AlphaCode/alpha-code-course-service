@@ -1,5 +1,6 @@
 package site.alphacode.alphacodecourseservice;
 
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,6 +15,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 @EnableScheduling
 @SpringBootApplication
 @EnableCaching
+@EnableRabbit
 public class AlphaCodeCourseServiceApplication {
 
     @Autowired

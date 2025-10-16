@@ -17,6 +17,7 @@ public class LessonMapper {
         learnLesson.setDuration(lesson.getDuration());
         learnLesson.setRequireRobot(lesson.getRequireRobot());
         learnLesson.setType(lesson.getType());
+        learnLesson.setVideoUrl(lesson.getVideoUrl());
         return learnLesson;
     }
 

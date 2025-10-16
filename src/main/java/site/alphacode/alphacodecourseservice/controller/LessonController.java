@@ -1,5 +1,7 @@
 package site.alphacode.alphacodecourseservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -55,9 +57,11 @@ public class LessonController {
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(
-            @RequestParam @Valid CreateLesson createLesson,
+            @RequestPart("data") String dataJson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
-    ) {
+    ) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        CreateLesson createLesson = mapper.readValue(dataJson, CreateLesson.class);
         createLesson.setVideoFile(videoFile);
         return lessonService.create(createLesson);
     }

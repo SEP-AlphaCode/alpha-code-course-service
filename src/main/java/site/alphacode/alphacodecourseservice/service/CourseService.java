@@ -12,7 +12,7 @@ public interface CourseService {
     CourseDto create(CreateCourse createCourse);
     CourseDto getActiveCourseById(UUID id);
     CourseDto getActiveCourseBySlug(String slug);
-    PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search);
+    PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search, UUID categoryId);
     CourseDto update(UUID id, UpdateCourse updateCourse);
     CourseDto patchUpdate(UUID id, PatchCourse patchCourse);
     void delete(UUID id);

@@ -14,13 +14,14 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     @Query("""
        SELECT c FROM Course c
        WHERE c.status = 1
+         AND (:categoryId IS NULL OR c.category.id = :categoryId)
          AND (:searchTerm IS NULL OR :searchTerm = '' 
               OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
               OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
        ORDER BY c.createdDate DESC
        """)
     Page<Course> findAllActiveCourse(
-            @Param("searchTerm") String searchTerm,
+            @Param("searchTerm") String searchTerm,@Param("categoryId") UUID categoryId,
             Pageable pageable
     );
 

@@ -25,7 +25,6 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get category by id")
-    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public CategoryDto getCategoryById(@PathVariable UUID id) {
         return categoryService.getCategoryById(id);
     }

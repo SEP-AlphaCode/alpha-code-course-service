@@ -32,8 +32,8 @@ public class CourseController {
 
     @GetMapping
     @Operation(summary = "Get all active courses with pagination and optional search filter")
-    public PagedResult<CourseDto> getAllActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search) {
-        return courseService.getAllActiveCourses(page, size, search);
+    public PagedResult<CourseDto> getAllActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search, @RequestParam(required = false) UUID categoryId) {
+        return courseService.getAllActiveCourses(page, size, search, categoryId);
     }
 
     @GetMapping("/none-delete")

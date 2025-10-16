@@ -65,10 +65,10 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
-    @Cacheable(value = "courses_list", key = "{#page, #size, #search}")
-    public PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search) {
+    @Cacheable(value = "courses_list", key = "{#page, #size, #search, #categoryId}")
+    public PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search, UUID categoryId) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
-        Page<Course> course = courseRepository.findAllActiveCourse(search, pageable);
+        Page<Course> course = courseRepository.findAllActiveCourse(search, categoryId, pageable);
         return new PagedResult<>(course.map(CourseMapper::toDto));
     }
 

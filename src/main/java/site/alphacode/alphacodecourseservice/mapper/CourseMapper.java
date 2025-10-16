@@ -24,6 +24,10 @@ public class CourseMapper {
         courseDto.setStatus(course.getStatus());
         courseDto.setRequireLicense(course.getRequireLicense());
 
+        if(course.getCategory() != null) {
+            courseDto.setCategoryName(course.getCategory().getName());
+        }
+
         return courseDto;
     }
 }

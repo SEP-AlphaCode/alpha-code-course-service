@@ -33,6 +33,9 @@ public class Lesson extends BaseEntity {
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Column(name = "video_url", length = 512)
+    private String videoUrl;
+
     @Column(name = "duration", nullable = false)
     private Integer duration; // tính bằng giây
 

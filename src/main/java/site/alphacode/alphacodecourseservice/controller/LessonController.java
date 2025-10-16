@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -53,21 +54,35 @@ public class LessonController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution create(@Valid @ModelAttribute @RequestBody CreateLesson createLesson) {
+    public LessonWithSolution create(
+            @RequestPart("data") @Valid CreateLesson createLesson,
+            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+    ) {
+        createLesson.setVideoFile(videoFile);
         return lessonService.create(createLesson);
     }
 
     @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution update(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody UpdateLesson updateLesson) {
+    public LessonWithSolution update(
+            @PathVariable UUID lessonId,
+            @RequestPart("data") @Valid UpdateLesson updateLesson,
+            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+    ) {
+        updateLesson.setVideoFile(videoFile);
         return lessonService.update(lessonId, updateLesson);
     }
 
     @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution patch(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody PatchLesson patchLesson) {
+    public LessonWithSolution patch(
+            @PathVariable UUID lessonId,
+            @RequestPart("data") @Valid PatchLesson patchLesson,
+            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+    ) {
+        patchLesson.setVideoFile(videoFile);
         return lessonService.patch(lessonId, patchLesson);
     }
 

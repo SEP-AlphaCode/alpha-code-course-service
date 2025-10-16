@@ -1,7 +1,6 @@
 package site.alphacode.alphacodecourseservice.dto.request.update;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

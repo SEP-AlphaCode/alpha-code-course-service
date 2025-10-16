@@ -111,7 +111,7 @@ public class LessonServiceImplement implements LessonService {
                 .orElse(0);
 
         // Xử lý content
-        String contentToSave;
+        String contentToSave = null;
         if (createLesson.getVideoFile() != null && !createLesson.getVideoFile().isEmpty()) {
             // Upload video lên S3 -> trả về URL
                 try {
@@ -124,19 +124,15 @@ public class LessonServiceImplement implements LessonService {
                 } catch (IOException e) {
                     throw new RuntimeException("Upload video thất bại", e);
                 }
-        } else {
-            if (createLesson.getContent() == null || createLesson.getContent().isBlank()) {
-                throw new BadRequestException("Content là bắt buộc nếu không upload video.");
-            }
-            contentToSave = createLesson.getContent();
         }
 
         Lesson newLesson = new Lesson();
-        newLesson.setContent(contentToSave);
+        newLesson.setContent(createLesson.getContent());
         newLesson.setCourseId(createLesson.getCourseId());
         newLesson.setDuration(createLesson.getDuration());
         newLesson.setOrderNumber(maxOrder + 1);
         newLesson.setRequireRobot(createLesson.getRequireRobot());
+        newLesson.setVideoUrl(contentToSave);
         newLesson.setSolution(createLesson.getSolution());
         newLesson.setStatus(1);
         newLesson.setTitle(createLesson.getTitle());
@@ -183,7 +179,7 @@ public class LessonServiceImplement implements LessonService {
                 ));
 
         // Xử lý content
-        String contentToSave;
+        String contentToSave = null;
         if (updateLesson.getVideoFile() != null && !updateLesson.getVideoFile().isEmpty()) {
             // Upload video lên S3 -> trả về URL
             try {
@@ -196,11 +192,6 @@ public class LessonServiceImplement implements LessonService {
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }
-        } else {
-            if (updateLesson.getContent() == null || updateLesson.getContent().isBlank()) {
-                throw new BadRequestException("Content là bắt buộc nếu không upload video.");
-            }
-            contentToSave = updateLesson.getContent();
         }
 
         // Cập nhật duration cho course (nếu thay đổi)
@@ -211,7 +202,8 @@ public class LessonServiceImplement implements LessonService {
         }
 
         existing.setTitle(updateLesson.getTitle());
-        existing.setContent(contentToSave);
+        existing.setContent(updateLesson.getContent());
+        existing.setVideoUrl(contentToSave);
         existing.setDuration(updateLesson.getDuration());
         existing.setRequireRobot(updateLesson.getRequireRobot());
         existing.setSolution(updateLesson.getSolution());
@@ -271,8 +263,10 @@ public class LessonServiceImplement implements LessonService {
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }
-            existing.setContent(videoUrl);
-        } else if (patchLesson.getContent() != null) {
+            existing.setVideoUrl(videoUrl);
+        }
+
+        if (patchLesson.getContent() != null) {
             existing.setContent(patchLesson.getContent());
         }
 

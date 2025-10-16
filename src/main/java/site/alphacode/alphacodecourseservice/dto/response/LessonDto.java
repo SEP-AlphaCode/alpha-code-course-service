@@ -28,6 +28,8 @@ public class LessonDto extends BaseEntityDto implements Serializable {
 
     private String content;
 
+    private String videoUrl;
+
     private Integer duration;
 
     private Boolean requireRobot;

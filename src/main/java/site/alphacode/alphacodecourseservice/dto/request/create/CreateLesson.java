@@ -27,8 +27,6 @@ public class CreateLesson {
 
     private String content;
 
-    private MultipartFile videoFile;
-
     @NotNull(message = "Thời lượng bài học là bắt buộc")
     @Min(value = 1, message = "Thời lượng bài học phải ít nhất 1 giây")
     private Integer duration;

@@ -1,7 +1,5 @@
 package site.alphacode.alphacodecourseservice.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -57,36 +55,24 @@ public class LessonController {
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(
-            @RequestPart("data") String dataJson,
+            @Valid @RequestPart("createLesson") CreateLesson createLesson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
-    ) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        CreateLesson createLesson = mapper.readValue(dataJson, CreateLesson.class);
-        createLesson.setVideoFile(videoFile);
-        return lessonService.create(createLesson);
+    ) {
+        return lessonService.create(createLesson, videoFile);
     }
+
 
     @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution update(
-            @PathVariable UUID lessonId,
-            @RequestParam @Valid UpdateLesson updateLesson,
-            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
-    ) {
-        updateLesson.setVideoFile(videoFile);
+    public LessonWithSolution update(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody UpdateLesson updateLesson) {
         return lessonService.update(lessonId, updateLesson);
     }
 
     @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public LessonWithSolution patch(
-            @PathVariable UUID lessonId,
-            @RequestParam @Valid PatchLesson patchLesson,
-            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
-    ) {
-        patchLesson.setVideoFile(videoFile);
+    public LessonWithSolution patch(@Valid @ModelAttribute @PathVariable UUID lessonId, @RequestBody PatchLesson patchLesson) {
         return lessonService.patch(lessonId, patchLesson);
     }
 

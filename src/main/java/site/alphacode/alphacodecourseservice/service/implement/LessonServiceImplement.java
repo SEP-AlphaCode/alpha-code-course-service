@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -97,7 +98,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true)
     })
-    public LessonWithSolution create (CreateLesson createLesson){
+    public LessonWithSolution create (CreateLesson createLesson, MultipartFile videoFile) {
         var lesson = lessonRepository.findByTitle(createLesson.getTitle());
         if (lesson.isPresent()) {
             throw new ConflictException("Tiêu đề bài học đã tồn tại.");
@@ -112,14 +113,14 @@ public class LessonServiceImplement implements LessonService {
 
         // Xử lý content
         String contentToSave = null;
-        if (createLesson.getVideoFile() != null && !createLesson.getVideoFile().isEmpty()) {
+        if (videoFile != null && !videoFile.isEmpty()) {
             // Upload video lên S3 -> trả về URL
                 try {
-                    String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  createLesson.getVideoFile().getOriginalFilename();
+                    String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  videoFile.getOriginalFilename();
                     contentToSave = s3Service.uploadBytes(
-                            createLesson.getVideoFile().getBytes(),
+                            videoFile.getBytes(),
                             fileKey,
-                            createLesson.getVideoFile().getContentType()
+                            videoFile.getContentType()
                     );
                 } catch (IOException e) {
                     throw new RuntimeException("Upload video thất bại", e);

@@ -1,5 +1,6 @@
 package site.alphacode.alphacodecourseservice.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -12,7 +13,7 @@ import java.util.UUID;
 public interface LessonService {
     LessonDto getLessonById(UUID id);
     LessonWithSolution getLessonWithSolutionById(UUID id);
-    LessonWithSolution create (CreateLesson createLesson);
+    LessonWithSolution create (CreateLesson createLesson, MultipartFile videoFile);
     LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson);
     LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson);
     void delete(UUID lessonId);

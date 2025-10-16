@@ -55,7 +55,7 @@ public class LessonController {
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(
-            @RequestPart("data") @Valid CreateLesson createLesson,
+            @RequestParam @Valid CreateLesson createLesson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
         createLesson.setVideoFile(videoFile);
@@ -67,7 +67,7 @@ public class LessonController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution update(
             @PathVariable UUID lessonId,
-            @RequestPart("data") @Valid UpdateLesson updateLesson,
+            @RequestParam @Valid UpdateLesson updateLesson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
         updateLesson.setVideoFile(videoFile);
@@ -79,7 +79,7 @@ public class LessonController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution patch(
             @PathVariable UUID lessonId,
-            @RequestPart("data") @Valid PatchLesson patchLesson,
+            @RequestParam @Valid PatchLesson patchLesson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
         patchLesson.setVideoFile(videoFile);

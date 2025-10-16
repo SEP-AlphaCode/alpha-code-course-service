@@ -35,6 +35,7 @@ public class LessonMapper {
         lessonDto.setCreatedDate(lesson.getCreatedDate());
         lessonDto.setLastUpdated(lesson.getLastUpdated());
         lessonDto.setType(lesson.getType());
+        lessonDto.setVideoUrl(lesson.getVideoUrl());
 
         return lessonDto;
     }
@@ -55,6 +56,7 @@ public class LessonMapper {
         lessonWithSolution.setLastUpdated(lesson.getLastUpdated());
         lessonWithSolution.setSolution(lesson.getSolution());
         lessonWithSolution.setType(lesson.getType());
+        lessonWithSolution.setVideoUrl(lesson.getVideoUrl());
 
         return lessonWithSolution;
     }

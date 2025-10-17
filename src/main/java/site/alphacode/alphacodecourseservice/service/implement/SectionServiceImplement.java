@@ -65,9 +65,13 @@ public class SectionServiceImplement implements SectionService {
         sectionRepository.findByTitleAndCourseId(createSection.getTitle(), createSection.getCourseId())
                 .ifPresent(s -> { throw new ConflictException("Section title đã tồn tại trong course này."); });
 
+        // Lấy orderNumber lớn nhất trong course
+        Integer maxOrder = sectionRepository.findMaxOrderNumberByCourseId(createSection.getCourseId());
+        int newOrderNumber = (maxOrder == null) ? 1 : maxOrder + 1;  // Nếu chưa có section nào -> 1
+
         Section section = Section.builder()
                 .title(createSection.getTitle())
-                .orderNumber(createSection.getOrderNumber())
+                .orderNumber(newOrderNumber)
                 .courseId(createSection.getCourseId())
                 .createdDate(LocalDateTime.now())
                 .status(1) // Active by default

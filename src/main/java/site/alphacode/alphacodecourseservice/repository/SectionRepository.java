@@ -20,4 +20,7 @@ public interface SectionRepository extends JpaRepository<Section, UUID> {
 
     @Query("SELECT s FROM Section s WHERE s.title = :title AND s.courseId = :courseId")
     Optional<Section> findByTitleAndCourseId(@Param("title") String title, @Param("courseId") UUID courseId);
+
+    @Query("SELECT MAX(s.orderNumber) FROM Section s WHERE s.courseId = :courseId")
+    Integer findMaxOrderNumberByCourseId(@Param("courseId") UUID courseId);
 }

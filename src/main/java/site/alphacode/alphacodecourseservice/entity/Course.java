@@ -60,7 +60,7 @@ public class Course extends BaseEntity {
     private Set<CourseBundle> courseBundles;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Lesson> lessons;
+    private Set<Section> sections;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)

@@ -34,7 +34,7 @@ public class LessonWithSolution extends BaseEntityDto implements Serializable {
 
     private Integer orderNumber;
 
-    private UUID courseId;
+    private UUID sectionId;
 
     private JsonNode solution;
 

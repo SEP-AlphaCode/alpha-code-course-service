@@ -52,10 +52,10 @@ public class Lesson extends BaseEntity {
     @Column(name = "type", nullable = false)
     private Integer type;
 
-    @Column(name = "course_id", nullable = false, updatable = false, columnDefinition = "uuid")
-    private UUID courseId;
+    @Column(name = "section_id", nullable = false, columnDefinition = "uuid")
+    private UUID sectionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", insertable = false, updatable = false)
-    private Course course;
+    @JoinColumn(name = "section_id", insertable = false, updatable = false)
+    private Section section;
 }

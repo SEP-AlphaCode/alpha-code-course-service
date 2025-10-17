@@ -34,8 +34,8 @@ public class CreateLesson {
     @NotNull(message = "Trạng thái yêu cầu robot là bắt buộc")
     private Boolean requireRobot;
 
-    @NotNull(message = "Course ID là bắt buộc")
-    private UUID courseId;
+    @NotNull(message = "Section ID là bắt buộc")
+    private UUID sectionId;
 
     @NotNull(message = "Loại bài học là bắt buộc")
     private Integer type;

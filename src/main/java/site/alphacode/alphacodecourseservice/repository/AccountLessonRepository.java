@@ -14,14 +14,15 @@ import java.util.UUID;
 public interface AccountLessonRepository extends JpaRepository<AccountLesson, UUID> {
 
     @Query("""
-        SELECT new site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration(
-            l.id, l.title, l.duration, al.status
-        )
-        FROM AccountLesson al
-        JOIN al.lesson l
-        WHERE l.course.id = :courseId AND al.accountId = :accountId
-        ORDER BY l.orderNumber ASC
-    """)
+    SELECT new site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration(
+        l.id, l.title, l.duration, al.status
+    )
+    FROM AccountLesson al
+    JOIN Lesson l ON al.lessonId = l.id
+    JOIN Section s ON l.sectionId = s.id
+    WHERE s.courseId = :courseId AND al.accountId = :accountId
+    ORDER BY l.orderNumber ASC
+""")
     Page<AccountLessonWithDuration> getLessonDurationAndTitleByCourseIdAndAccountId(
             @Param("courseId") UUID courseId,
             @Param("accountId") UUID accountId,

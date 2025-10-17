@@ -11,24 +11,46 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface LessonRepository extends JpaRepository<Lesson, UUID> {
-    @Query("SELECT COUNT(l) FROM Lesson l WHERE l.courseId = :courseId AND l.status = 1")
-    int countByCourseId(@Param("courseId") UUID courseId);
 
+    // Đếm lesson active theo Section
+    @Query("""
+    SELECT COUNT(l)
+    FROM Lesson l
+    JOIN Section s ON l.sectionId = s.id
+    WHERE s.courseId = :courseId
+      AND l.status = 1
+""")
+    int countActiveLessonsByCourseId(@Param("courseId") UUID courseId);
+
+    // Lấy lesson theo title (tránh trùng)
     @Query("SELECT l FROM Lesson l WHERE l.title = :title AND l.status <> 0")
     Optional<Lesson> findByTitle(@Param("title") String title);
 
+    // Lấy lesson theo id
     @Query("SELECT l FROM Lesson l WHERE l.id = :id AND l.status <> 0")
     Optional<Lesson> findById(@Param("id") UUID id);
 
+    // Lấy lesson active theo id
     @Query("SELECT l FROM Lesson l WHERE l.id = :id AND l.status = 1")
     Optional<Lesson> findActiveById(@Param("id") UUID id);
 
-    @Query("SELECT COALESCE(MAX(l.orderNumber), 0) FROM Lesson l WHERE l.course.id = :courseId")
-    Optional<Integer> findMaxOrderNumberByCourseId(@Param("courseId") UUID courseId);
+    // Max order number theo Section
+    @Query("SELECT COALESCE(MAX(l.orderNumber), 0) FROM Lesson l WHERE l.sectionId = :sectionId")
+    Optional<Integer> findMaxOrderNumberBySectionId(@Param("sectionId") UUID sectionId);
 
-    @Query("SELECT l FROM Lesson l WHERE l.course.id = :courseId AND l.status = 1 ORDER BY l.orderNumber ASC")
+    // Lấy tất cả lesson active theo Section
+    @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status = 1 ORDER BY l.orderNumber ASC")
+    Page<Lesson> findAllActiveLessonsBySectionId(@Param("sectionId") UUID sectionId, Pageable pageable);
+
+    // Lấy tất cả lesson (có solution) theo Section
+    @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status <> 0 ORDER BY l.orderNumber ASC")
+    Page<Lesson> findAllLessonWithSolutionBySectionId(@Param("sectionId") UUID sectionId, Pageable pageable);
+
+    // Nếu muốn lấy Lesson theo Course (join Section → Course)
+    @Query("SELECT l FROM Lesson l JOIN l.section s WHERE s.course.id = :courseId AND l.status = 1 ORDER BY l.orderNumber ASC")
     Page<Lesson> findAllActiveLessonsByCourseId(@Param("courseId") UUID courseId, Pageable pageable);
 
-    @Query("SELECT l FROM Lesson l WHERE l.course.id = :courseId AND l.status <> 0 ORDER BY l.orderNumber ASC")
-    Page<Lesson> findAllLessonWithSolutionByCourseId(UUID courseId, Pageable pageable);
+    @Query("SELECT l FROM Lesson l JOIN l.section s WHERE s.course.id = :courseId AND l.status <> 0 ORDER BY l.orderNumber ASC")
+    Page<Lesson> findAllLessonWithSolutionByCourseId(@Param("courseId") UUID courseId, Pageable pageable);
+
 }

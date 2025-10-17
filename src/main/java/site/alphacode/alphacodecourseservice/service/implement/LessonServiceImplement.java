@@ -19,12 +19,13 @@ import site.alphacode.alphacodecourseservice.dto.response.LessonWithSolution;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.entity.Lesson;
-import site.alphacode.alphacodecourseservice.exception.BadRequestException;
+import site.alphacode.alphacodecourseservice.entity.Section;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.LessonMapper;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
+import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.LessonService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 
@@ -36,58 +37,48 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class LessonServiceImplement implements LessonService {
+
     private final LessonRepository lessonRepository;
+    private final SectionRepository sectionRepository;
     private final CourseRepository courseRepository;
     private final S3Service s3Service;
 
     @Override
     @Cacheable(value = "lesson", key = "#id")
     public LessonDto getLessonById(UUID id) {
-        var lesson = lessonRepository.findById(id);
-            if (lesson.isEmpty()) {
-                throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
-            }
-
-        return LessonMapper.toDto(lesson.get());
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + id + " không tồn tại."));
+        return LessonMapper.toDto(lesson);
     }
 
     @Override
-    @Cacheable(value = "lessons_list", key = "{#courseId, #page, #size}")
-    public PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size) {
-        var course = courseRepository.findActiveCourseById(courseId);
-        if (course.isEmpty()) {
-            throw new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại.");
-        }
+    @Cacheable(value = "lessons_list", key = "{#sectionId, #page, #size}")
+    public PagedResult<LessonDto> getActiveLessonsBySectionId(UUID sectionId, int page, int size) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + sectionId + " không tồn tại."));
 
-        Pageable pageable = PageRequest.of(page - 1, size);
-
-        var pagedLessons = lessonRepository.findAllActiveLessonsByCourseId(courseId, pageable);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
+        var pagedLessons = lessonRepository.findAllActiveLessonsBySectionId(sectionId, pageable);
         return new PagedResult<>(pagedLessons.map(LessonMapper::toDto));
     }
 
     @Override
-    @Cacheable(value = "lessons_with_solution_list", key = "{#courseId, #page, #size}")
-    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionByCourseId(UUID courseId, int page, int size) {
-        var course = courseRepository.findNoneDeleteCourseById(courseId);
-        if (course.isEmpty()) {
-            throw new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại.");
-        }
+    @Cacheable(value = "lessons_with_solution_list", key = "{#sectionId, #page, #size}")
+    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionBySectionId(UUID sectionId, int page, int size) {
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + sectionId + " không tồn tại."));
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
-
-        var pagedLessons = lessonRepository.findAllLessonWithSolutionByCourseId(courseId, pageable);
+        var pagedLessons = lessonRepository.findAllLessonWithSolutionBySectionId(sectionId, pageable);
         return new PagedResult<>(pagedLessons.map(LessonMapper::toLessonWithSolution));
     }
 
     @Override
     @Cacheable(value = "lesson_with_solution", key = "#id")
     public LessonWithSolution getLessonWithSolutionById(UUID id) {
-        var lesson = lessonRepository.findById(id);
-            if (lesson.isEmpty()) {
-                throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
-            }
-
-        return LessonMapper.toLessonWithSolution(lesson.get());
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + id + " không tồn tại."));
+        return LessonMapper.toLessonWithSolution(lesson);
     }
 
     @Override
@@ -98,57 +89,56 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true)
     })
-    public LessonWithSolution create (CreateLesson createLesson, MultipartFile videoFile) {
-        var lesson = lessonRepository.findByTitle(createLesson.getTitle());
-        if (lesson.isPresent()) {
-            throw new ConflictException("Tiêu đề bài học đã tồn tại.");
-        }
-        Course course = courseRepository.findNoneDeleteCourseById(createLesson.getCourseId())
+    public LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile) {
+        // Check title trùng
+        lessonRepository.findByTitle(createLesson.getTitle())
+                .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
+
+        // Lấy Section
+        Section section = sectionRepository.findById(createLesson.getSectionId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Khóa học với id " + createLesson.getCourseId() + " không tồn tại."
+                        "Section với id " + createLesson.getSectionId() + " không tồn tại."
                 ));
 
-        int maxOrder = lessonRepository.findMaxOrderNumberByCourseId(createLesson.getCourseId())
-                .orElse(0);
+        Course course = section.getCourse();
 
-        // Xử lý content
-        String contentToSave = null;
+        // Max order
+        int maxOrder = lessonRepository.findMaxOrderNumberBySectionId(createLesson.getSectionId()).orElse(0);
+
+        // Upload video nếu có
+        String videoUrl = null;
         if (videoFile != null && !videoFile.isEmpty()) {
-            // Upload video lên S3 -> trả về URL
-                try {
-                    String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  videoFile.getOriginalFilename();
-                    contentToSave = s3Service.uploadBytes(
-                            videoFile.getBytes(),
-                            fileKey,
-                            videoFile.getContentType()
-                    );
-                } catch (IOException e) {
-                    throw new RuntimeException("Upload video thất bại", e);
-                }
+            try {
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
+                videoUrl = s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType());
+            } catch (IOException e) {
+                throw new RuntimeException("Upload video thất bại", e);
+            }
         }
 
-        Lesson newLesson = new Lesson();
-        newLesson.setContent(createLesson.getContent());
-        newLesson.setCourseId(createLesson.getCourseId());
-        newLesson.setDuration(createLesson.getDuration());
-        newLesson.setOrderNumber(maxOrder + 1);
-        newLesson.setRequireRobot(createLesson.getRequireRobot());
-        newLesson.setVideoUrl(contentToSave);
-        newLesson.setSolution(createLesson.getSolution());
-        newLesson.setStatus(1);
-        newLesson.setTitle(createLesson.getTitle());
-        newLesson.setCreatedDate(LocalDateTime.now());
-        newLesson.setLastUpdated(null);
-        newLesson.setType(createLesson.getType());
+        Lesson lesson = Lesson.builder()
+                .title(createLesson.getTitle())
+                .content(createLesson.getContent())
+                .videoUrl(videoUrl)
+                .duration(createLesson.getDuration())
+                .requireRobot(createLesson.getRequireRobot())
+                .solution(createLesson.getSolution())
+                .orderNumber(maxOrder + 1)
+                .status(1)
+                .type(createLesson.getType())
+                .sectionId(createLesson.getSectionId())
+                .createdDate(LocalDateTime.now())
+                .lastUpdated(null)
+                .build();
 
-        Lesson saved = lessonRepository.save(newLesson);
+        Lesson saved = lessonRepository.save(lesson);
 
+        // Cập nhật Course
         course.setTotalLessons(course.getTotalLessons() + 1);
-        course.setLastUpdated(LocalDateTime.now());
         course.setTotalDuration(course.getTotalDuration() + saved.getDuration());
+        course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
-        // 6. Trả về DTO hoặc wrapper
         return LessonMapper.toLessonWithSolution(saved);
     }
 
@@ -162,59 +152,52 @@ public class LessonServiceImplement implements LessonService {
     })
     public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Bài học với id " + lessonId + " không tồn tại."
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
-        // check trùng title (nếu có update title)
+        // Check trùng title
         if (!existing.getTitle().equals(updateLesson.getTitle())) {
             lessonRepository.findByTitle(updateLesson.getTitle())
-                    .ifPresent(l -> {
-                        throw new ConflictException("Tiêu đề bài học đã tồn tại.");
-                    });
+                    .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
         }
 
-        Course course = courseRepository.findNoneDeleteCourseById(updateLesson.getCourseId())
+        // Lấy Section và Course
+        Section section = sectionRepository.findById(updateLesson.getSectionId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Khóa học với id " + updateLesson.getCourseId() + " không tồn tại."
+                        "Section với id " + updateLesson.getSectionId() + " không tồn tại."
                 ));
+        Course course = section.getCourse();
 
-        // Xử lý content
-        String contentToSave = null;
+        // Upload video nếu có
+        String videoUrl = existing.getVideoUrl();
         if (updateLesson.getVideoFile() != null && !updateLesson.getVideoFile().isEmpty()) {
-            // Upload video lên S3 -> trả về URL
             try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  updateLesson.getVideoFile().getOriginalFilename();
-                contentToSave = s3Service.uploadBytes(
-                        updateLesson.getVideoFile().getBytes(),
-                        fileKey,
-                        updateLesson.getVideoFile().getContentType()
-                );
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + updateLesson.getVideoFile().getOriginalFilename();
+                videoUrl = s3Service.uploadBytes(updateLesson.getVideoFile().getBytes(), fileKey, updateLesson.getVideoFile().getContentType());
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }
         }
 
-        // Cập nhật duration cho course (nếu thay đổi)
+        // Update duration Course nếu thay đổi
         if (!Objects.equals(existing.getDuration(), updateLesson.getDuration())) {
-            int oldDuration = existing.getDuration();
-            int newDuration = updateLesson.getDuration();
-            course.setTotalDuration(course.getTotalDuration() - oldDuration + newDuration);
+            course.setTotalDuration(course.getTotalDuration() - existing.getDuration() + updateLesson.getDuration());
         }
 
         existing.setTitle(updateLesson.getTitle());
         existing.setContent(updateLesson.getContent());
-        existing.setVideoUrl(contentToSave);
+        existing.setVideoUrl(videoUrl);
         existing.setDuration(updateLesson.getDuration());
         existing.setRequireRobot(updateLesson.getRequireRobot());
         existing.setSolution(updateLesson.getSolution());
         existing.setStatus(updateLesson.getStatus());
-        existing.setLastUpdated(LocalDateTime.now());
         existing.setType(updateLesson.getType());
+        existing.setOrderNumber(updateLesson.getOrderNumber());
+        existing.setLastUpdated(LocalDateTime.now());
+        existing.setSectionId(updateLesson.getSectionId());
 
         Lesson saved = lessonRepository.save(existing);
 
-        // update course lastUpdated
+        // Update course lastUpdated
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
@@ -231,73 +214,42 @@ public class LessonServiceImplement implements LessonService {
     })
     public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Bài học với id " + lessonId + " không tồn tại."
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
-        Course course = courseRepository.findNoneDeleteCourseById(existing.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Khóa học với id " + existing.getCourseId() + " không tồn tại."
-                ));
+        Section section = sectionRepository.findById(existing.getSectionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + existing.getSectionId() + " không tồn tại."));
+        Course course = section.getCourse();
 
-        boolean durationChanged = false;
         int oldDuration = existing.getDuration();
 
         if (patchLesson.getTitle() != null && !existing.getTitle().equals(patchLesson.getTitle())) {
             lessonRepository.findByTitle(patchLesson.getTitle())
-                    .ifPresent(l -> {
-                        throw new ConflictException("Tiêu đề bài học đã tồn tại.");
-                    });
+                    .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
             existing.setTitle(patchLesson.getTitle());
         }
 
         if (patchLesson.getVideoFile() != null && !patchLesson.getVideoFile().isEmpty()) {
-            // upload file lên S3, trả về URL
-            String videoUrl;
             try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" +  patchLesson.getVideoFile().getOriginalFilename();
-                videoUrl = s3Service.uploadBytes(
-                        patchLesson.getVideoFile().getBytes(),
-                        fileKey,
-                        patchLesson.getVideoFile().getContentType()
-                );
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + patchLesson.getVideoFile().getOriginalFilename();
+                existing.setVideoUrl(s3Service.uploadBytes(patchLesson.getVideoFile().getBytes(), fileKey, patchLesson.getVideoFile().getContentType()));
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }
-            existing.setVideoUrl(videoUrl);
         }
 
-        if (patchLesson.getContent() != null) {
-            existing.setContent(patchLesson.getContent());
-        }
-
-        if (patchLesson.getDuration() != null) {
-            existing.setDuration(patchLesson.getDuration());
-            durationChanged = true;
-        }
-        if (patchLesson.getOrderNumber() != null) {
-            existing.setOrderNumber(patchLesson.getOrderNumber());
-        }
-        if (patchLesson.getRequireRobot() != null) {
-            existing.setRequireRobot(patchLesson.getRequireRobot());
-        }
-        if (patchLesson.getSolution() != null) {
-            existing.setSolution(patchLesson.getSolution());
-        }
-        if (patchLesson.getStatus() != null) {
-            existing.setStatus(patchLesson.getStatus());
-        }
-
-        if (patchLesson.getType() != null) {
-            existing.setType(patchLesson.getType());
-        }
+        if (patchLesson.getContent() != null) existing.setContent(patchLesson.getContent());
+        if (patchLesson.getDuration() != null) existing.setDuration(patchLesson.getDuration());
+        if (patchLesson.getOrderNumber() != null) existing.setOrderNumber(patchLesson.getOrderNumber());
+        if (patchLesson.getRequireRobot() != null) existing.setRequireRobot(patchLesson.getRequireRobot());
+        if (patchLesson.getSolution() != null) existing.setSolution(patchLesson.getSolution());
+        if (patchLesson.getStatus() != null) existing.setStatus(patchLesson.getStatus());
+        if (patchLesson.getType() != null) existing.setType(patchLesson.getType());
 
         existing.setLastUpdated(LocalDateTime.now());
-
         Lesson saved = lessonRepository.save(existing);
 
-        // cập nhật duration course nếu có thay đổi
-        if (durationChanged) {
+        // Update course duration nếu thay đổi
+        if (patchLesson.getDuration() != null) {
             course.setTotalDuration(course.getTotalDuration() - oldDuration + saved.getDuration());
         }
         course.setLastUpdated(LocalDateTime.now());
@@ -316,22 +268,42 @@ public class LessonServiceImplement implements LessonService {
     })
     public void delete(UUID lessonId) {
         Lesson existing = lessonRepository.findById(lessonId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Bài học với id " + lessonId + " không tồn tại."
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
-        Course course = courseRepository.findNoneDeleteCourseById(existing.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Khóa học với id " + existing.getCourseId() + " không tồn tại."
-                ));
+        Section section = sectionRepository.findById(existing.getSectionId())
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + existing.getSectionId() + " không tồn tại."));
+        Course course = section.getCourse();
 
         lessonRepository.delete(existing);
 
-        // Cập nhật lại totalLessons và totalDuration của course
+        // Cập nhật course
         course.setTotalLessons(course.getTotalLessons() - 1);
         course.setTotalDuration(course.getTotalDuration() - existing.getDuration());
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
     }
+
+    @Override
+    @Cacheable(value = "lessons_list", key = "{#courseId, #page, #size}")
+    public PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại."));
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
+        var pagedLessons = lessonRepository.findAllActiveLessonsByCourseId(courseId, pageable);
+        return new PagedResult<>(pagedLessons.map(LessonMapper::toDto));
+    }
+
+    @Override
+    @Cacheable(value = "lessons_with_solution_list", key = "{#courseId, #page, #size}")
+    public PagedResult<LessonWithSolution> getAllLessonsWithSolutionByCourseId(UUID courseId, int page, int size) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại."));
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
+        var pagedLessons = lessonRepository.findAllLessonWithSolutionByCourseId(courseId, pageable);
+        return new PagedResult<>(pagedLessons.map(LessonMapper::toLessonWithSolution));
+    }
+
 
 }

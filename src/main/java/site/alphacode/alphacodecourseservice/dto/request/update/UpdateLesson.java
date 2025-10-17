@@ -40,12 +40,15 @@ public class UpdateLesson {
         @NotNull(message = "Trạng thái là bắt buộc")
         private Integer status;
 
-        @NotNull(message = "CourseId là bắt buộc")
-        private UUID courseId;
+        @NotNull(message = "SectionId là bắt buộc")
+        private UUID sectionId;
 
         @NotNull(message = "Thời lượng bài học là bắt buộc")
         private Integer duration; // tính bằng giây
 
         @NotNull(message = "Loại bài học là bắt buộc")
         private Integer type;
+
+        @NotNull(message = "Thứ tự bài học là bắt buộc")
+        private Integer orderNumber;
 }

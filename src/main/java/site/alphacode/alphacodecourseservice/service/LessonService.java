@@ -11,12 +11,22 @@ import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import java.util.UUID;
 
 public interface LessonService {
+
+    // Lấy Lesson theo id
     LessonDto getLessonById(UUID id);
     LessonWithSolution getLessonWithSolutionById(UUID id);
-    LessonWithSolution create (CreateLesson createLesson, MultipartFile videoFile);
+
+    // Thao tác CRUD
+    LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile);
     LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson);
     LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson);
     void delete(UUID lessonId);
+
+    // Lấy Lesson theo Section
+    PagedResult<LessonDto> getActiveLessonsBySectionId(UUID sectionId, int page, int size);
+    PagedResult<LessonWithSolution> getAllLessonsWithSolutionBySectionId(UUID sectionId, int page, int size);
+
+    // Lấy Lesson theo Course (qua join Section → Course)
     PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size);
     PagedResult<LessonWithSolution> getAllLessonsWithSolutionByCourseId(UUID courseId, int page, int size);
 }

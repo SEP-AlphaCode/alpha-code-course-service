@@ -63,7 +63,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         accountCourse.setCompletedLesson(0);
         accountCourse.setCompleted(false);
         accountCourse.setProgressPercent(0);
-        accountCourse.setTotalLesson(lessonRepository.countByCourseId(createAccountCourse.getCourseId()));
+        accountCourse.setTotalLesson(lessonRepository.countActiveLessonsByCourseId(createAccountCourse.getCourseId()));
 
         accountCourse = repository.save(accountCourse);
         return AccountCourseMapper.toDto(accountCourse);
@@ -110,7 +110,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
             accountCourse.setCompletedLesson(0);
             accountCourse.setCompleted(false);
             accountCourse.setProgressPercent(0);
-            accountCourse.setTotalLesson(lessonRepository.countByCourseId(courseId));
+            accountCourse.setTotalLesson(lessonRepository.countActiveLessonsByCourseId(courseId));
 
             accountCourse = repository.save(accountCourse);
             createdCourses.add(AccountCourseMapper.toDto(accountCourse));

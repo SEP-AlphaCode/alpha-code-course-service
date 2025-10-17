@@ -36,7 +36,7 @@ public class LessonDto extends BaseEntityDto implements Serializable {
 
     private Integer orderNumber;
 
-    private UUID courseId;
+    private UUID sectionId;
 
     private Integer type;
 

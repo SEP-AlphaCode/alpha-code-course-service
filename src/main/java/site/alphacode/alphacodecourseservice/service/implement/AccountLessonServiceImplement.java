@@ -62,7 +62,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                   throw new ResourceNotFoundException("Không tìm thấy bài học: " + accountLesson.get().getLessonId());
             }
 
-            accountCourseRepository.updateLastAccessedByAccountIdAndCourseId(lesson.get().getCourseId(), accountLesson.get().getAccountId(), LocalDateTime.now());
+            accountCourseRepository.updateLastAccessedByAccountIdAndCourseId(lesson.get().getSection().getCourseId(), accountLesson.get().getAccountId(), LocalDateTime.now());
             var accountWithLesson = AccountLessonMapper.toAccountLessonWithLesson(accountLesson.get(), lesson.get());
 
             return Optional.ofNullable(accountWithLesson);
@@ -100,7 +100,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
             accountLesson.setCompletedAt(LocalDateTime.now());
             accountLesson.setStatus(2);
             var updated = accountLessonRepository.save(accountLesson);
-            var accountCourse = accountCourseRepository.findByAccountIdAndCourseId(accountLesson.getAccountId(), lesson.getCourseId())
+            var accountCourse = accountCourseRepository.findByAccountIdAndCourseId(accountLesson.getAccountId(), lesson.getSection().getCourseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học cho tài khoản và khóa học tương ứng"));
 
             accountCourse.setLastAccessed(LocalDateTime.now());

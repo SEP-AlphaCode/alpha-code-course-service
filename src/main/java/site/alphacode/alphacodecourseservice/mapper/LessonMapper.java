@@ -30,7 +30,7 @@ public class LessonMapper {
         lessonDto.setContent(lesson.getContent());
         lessonDto.setDuration(lesson.getDuration());
         lessonDto.setRequireRobot(lesson.getRequireRobot());
-        lessonDto.setCourseId(lesson.getCourseId());
+        lessonDto.setSectionId(lesson.getSectionId());
         lessonDto.setOrderNumber(lesson.getOrderNumber());
         lessonDto.setStatus(lesson.getStatus());
         lessonDto.setCreatedDate(lesson.getCreatedDate());
@@ -50,7 +50,7 @@ public class LessonMapper {
         lessonWithSolution.setContent(lesson.getContent());
         lessonWithSolution.setDuration(lesson.getDuration());
         lessonWithSolution.setRequireRobot(lesson.getRequireRobot());
-        lessonWithSolution.setCourseId(lesson.getCourseId());
+        lessonWithSolution.setSectionId(lesson.getSectionId());
         lessonWithSolution.setOrderNumber(lesson.getOrderNumber());
         lessonWithSolution.setStatus(lesson.getStatus());
         lessonWithSolution.setCreatedDate(lesson.getCreatedDate());

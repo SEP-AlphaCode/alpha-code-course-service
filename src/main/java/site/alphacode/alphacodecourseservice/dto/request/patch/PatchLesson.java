@@ -17,7 +17,6 @@ public class PatchLesson {
     private String title;
     private String contentType;
     private String content; // text hoặc URL
-    private MultipartFile videoFile; // nếu update video
     private Boolean requireRobot;
     private JsonNode solution;
     private Integer status;

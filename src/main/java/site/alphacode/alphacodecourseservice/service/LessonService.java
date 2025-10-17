@@ -18,8 +18,8 @@ public interface LessonService {
 
     // Thao tác CRUD
     LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile);
-    LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson);
-    LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson);
+    LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile);
+    LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson, MultipartFile videoFile);
     void delete(UUID lessonId);
 
     // Lấy Lesson theo Section

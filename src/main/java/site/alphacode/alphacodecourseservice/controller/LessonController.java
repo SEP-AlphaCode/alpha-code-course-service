@@ -89,7 +89,7 @@ public class LessonController {
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(
-            @Valid @ModelAttribute CreateLesson createLesson,
+            @Valid @RequestPart("createLesson")  CreateLesson createLesson,
             @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
         return lessonService.create(createLesson, videoFile);
@@ -97,27 +97,30 @@ public class LessonController {
 
     // ------------------- UPDATE -------------------
 
+    // ------------------- UPDATE -------------------
     @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution update(
             @PathVariable UUID lessonId,
-            @Valid @ModelAttribute UpdateLesson updateLesson
+            @Valid @RequestPart("updateLesson") UpdateLesson updateLesson,
+            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
-        return lessonService.update(lessonId, updateLesson);
+        return lessonService.update(lessonId, updateLesson, videoFile);
     }
 
     // ------------------- PATCH -------------------
-
     @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution patch(
             @PathVariable UUID lessonId,
-            @Valid @ModelAttribute PatchLesson patchLesson
+            @Valid @RequestPart("patchLesson") PatchLesson patchLesson,
+            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
     ) {
-        return lessonService.patch(lessonId, patchLesson);
+        return lessonService.patch(lessonId, patchLesson, videoFile);
     }
+
 
     // ------------------- DELETE -------------------
 

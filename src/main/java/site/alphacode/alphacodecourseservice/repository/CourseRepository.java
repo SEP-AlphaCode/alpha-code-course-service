@@ -38,8 +38,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             Pageable pageable
     );
 
-    @Query("SELECT c FROM Course c WHERE c.name = :name AND c.status <> 0")
-    boolean existsByName(@Param("name") String name);
+    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Course c WHERE c.name = :name AND c.status <> 0")
+    Boolean existsByName(@Param("name") String name);
 
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status = 1")
     Optional<Course> findActiveCourseById(@Param("id") UUID id);

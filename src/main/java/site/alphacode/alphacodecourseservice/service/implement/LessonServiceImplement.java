@@ -150,7 +150,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true)
     })
-    public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson) {
+    public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
@@ -169,10 +169,10 @@ public class LessonServiceImplement implements LessonService {
 
         // Upload video nếu có
         String videoUrl = existing.getVideoUrl();
-        if (updateLesson.getVideoFile() != null && !updateLesson.getVideoFile().isEmpty()) {
+        if (videoFile != null && !videoFile.isEmpty()) {
             try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + updateLesson.getVideoFile().getOriginalFilename();
-                videoUrl = s3Service.uploadBytes(updateLesson.getVideoFile().getBytes(), fileKey, updateLesson.getVideoFile().getContentType());
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
+                videoUrl = s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType());
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }
@@ -212,7 +212,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true)
     })
-    public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson) {
+    public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson, MultipartFile videoFile) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
@@ -228,10 +228,10 @@ public class LessonServiceImplement implements LessonService {
             existing.setTitle(patchLesson.getTitle());
         }
 
-        if (patchLesson.getVideoFile() != null && !patchLesson.getVideoFile().isEmpty()) {
+        if (videoFile != null && !videoFile.isEmpty()) {
             try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + patchLesson.getVideoFile().getOriginalFilename();
-                existing.setVideoUrl(s3Service.uploadBytes(patchLesson.getVideoFile().getBytes(), fileKey, patchLesson.getVideoFile().getContentType()));
+                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
+                existing.setVideoUrl(s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType()));
             } catch (IOException e) {
                 throw new RuntimeException("Upload video thất bại", e);
             }

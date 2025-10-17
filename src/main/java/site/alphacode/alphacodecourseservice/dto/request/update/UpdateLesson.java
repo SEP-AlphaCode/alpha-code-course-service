@@ -28,8 +28,6 @@ public class UpdateLesson {
 
         private String content; // text hoặc URL
 
-        private MultipartFile videoFile; // nếu update video
-
         @NotNull(message = "Cờ requireRobot là bắt buộc")
         private Boolean requireRobot;
 

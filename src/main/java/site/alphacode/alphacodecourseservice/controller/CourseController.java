@@ -67,14 +67,14 @@ public class CourseController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     @Operation(summary = "Update course by id")
-    public CourseDto update(@RequestParam UUID id, @Valid @ModelAttribute @RequestBody UpdateCourse updateCourse) {
+    public CourseDto update(@PathVariable UUID id, @Valid @ModelAttribute @RequestBody UpdateCourse updateCourse) {
         return courseService.update(id, updateCourse);
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     @Operation(summary = "Patch update course by id")
-    public CourseDto patchUpdate(@RequestParam UUID id, @Valid @ModelAttribute @RequestBody PatchCourse patchCourse) {
+    public CourseDto patchUpdate(@PathVariable UUID id, @Valid @ModelAttribute @RequestBody PatchCourse patchCourse) {
         return courseService.patchUpdate(id, patchCourse);
     }
 

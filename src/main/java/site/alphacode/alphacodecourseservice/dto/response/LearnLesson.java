@@ -2,11 +2,10 @@ package site.alphacode.alphacodecourseservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import site.alphacode.alphacodecourseservice.enums.LessonEnum;
+import site.alphacode.alphacodecourseservice.enums.LessonStatusEnum;
 
 import java.util.UUID;
 
@@ -25,6 +24,6 @@ public class LearnLesson {
 
     @JsonProperty(value = "typeText")
     public String getTypeText() {
-        return LessonEnum.fromCode(this.getType());
+        return LessonStatusEnum.fromCode(this.getType());
     }
 }

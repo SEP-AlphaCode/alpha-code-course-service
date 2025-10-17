@@ -5,21 +5,18 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum SectionEnum {
-    // Status
-    DELETED(0, "ĐÃ XÓA"),
-    ACTIVE(1, "ĐANG HOẠT ĐỘNG"),
-    INACTIVE(2, "KHÔNG HOẠT ĐỘNG"),
+public enum CourseLevelEnum {
 
-    // Type
-    LESSON(3, "BÀI HỌC"),
-    TEST(4, "BÀI KIỂM TRA");
+    BEGINNER(1, "DÀNH CHO NGƯỜI MỚI BẮT ĐẦU"),
+    INTERMEDIATE(2, "TRÌNH ĐỘ TRUNG BÌNH"),
+    ADVANCED(3, "TRÌNH ĐỘ NÂNG CAO");
+
     private final int code;
     private final String description;
 
     public static String fromCode(Integer code) {
         if (code == null) return null;
-        for (SectionEnum s : values()) {
+        for (CourseLevelEnum s : values()) {
             if (s.code == code) {
                 return s.description;
             }

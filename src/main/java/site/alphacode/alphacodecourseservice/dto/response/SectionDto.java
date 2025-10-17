@@ -2,13 +2,11 @@ package site.alphacode.alphacodecourseservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
-import site.alphacode.alphacodecourseservice.enums.SectionEnum;
-import site.alphacode.alphacodecourseservice.enums.SubmissionEnum;
+import site.alphacode.alphacodecourseservice.enums.SectionStatusEnum;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -25,6 +23,6 @@ public class SectionDto extends BaseEntityDto implements Serializable {
 
     @JsonProperty(value = "statusText")
     public String getStatusText() {
-        return SectionEnum.fromCode(this.getStatus());
+        return SectionStatusEnum.fromCode(this.getStatus());
     }
 }

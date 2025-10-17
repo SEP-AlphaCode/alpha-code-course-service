@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum LessonEnum {
+public enum LessonStatusEnum {
     // Status
     DELETED(0, "ĐÃ XÓA"),
     ACTIVE(1, "ĐANG HOẠT ĐỘNG"),
@@ -19,7 +19,7 @@ public enum LessonEnum {
 
     public static String fromCode(Integer code) {
         if (code == null) return null;
-        for (LessonEnum s : values()) {
+        for (LessonStatusEnum s : values()) {
             if (s.code == code) {
                 return s.description;
             }

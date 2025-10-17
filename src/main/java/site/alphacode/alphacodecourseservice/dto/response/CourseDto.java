@@ -2,16 +2,14 @@ package site.alphacode.alphacodecourseservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
-import site.alphacode.alphacodecourseservice.enums.AccountCourseEnum;
-import site.alphacode.alphacodecourseservice.enums.CourseEnum;
+import site.alphacode.alphacodecourseservice.enums.CourseLevelEnum;
+import site.alphacode.alphacodecourseservice.enums.CourseStatusEnum;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -45,12 +43,12 @@ public class CourseDto extends BaseEntityDto implements Serializable {
 
     @JsonProperty(value = "statusText")
     public String getStatusText() {
-        return CourseEnum.fromCode(this.getStatus());
+        return CourseStatusEnum.fromCode(this.getStatus());
     }
 
     @JsonProperty(value = "levelText")
     public String getLevelText() {
-        return CourseEnum.fromCode(this.getLevel());
+        return CourseLevelEnum.fromCode(this.getLevel());
     }
 }
 

@@ -41,6 +41,8 @@ public class CourseDto extends BaseEntityDto implements Serializable {
 
     private String categoryName;
 
+    private Integer sectionCount;
+
     @JsonProperty(value = "statusText")
     public String getStatusText() {
         return CourseStatusEnum.fromCode(this.getStatus());

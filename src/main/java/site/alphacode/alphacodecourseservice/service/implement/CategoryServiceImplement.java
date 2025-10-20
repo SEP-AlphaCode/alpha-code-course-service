@@ -22,6 +22,7 @@ import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.CategoryMapper;
 import site.alphacode.alphacodecourseservice.repository.CategoryRepository;
+import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.service.CategoryService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
@@ -34,6 +35,7 @@ import java.util.UUID;
 public class CategoryServiceImplement implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final S3Service s3Service;
+    private final CourseRepository courseRepository;
 
     @Override
     @Cacheable(value = "category", key = "{#slug}")
@@ -65,10 +67,16 @@ public class CategoryServiceImplement implements CategoryService {
     @Cacheable(value = "none_delete_categories_list", key = "{#page, #size, #search}")
     public PagedResult<CategoryDto> getNoneDeleteCategories(int page, int size, String search) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdDate").descending());
-
         Page<Category> categoryPage = categoryRepository.findAllActiveCategories(search, pageable);
 
-        return new PagedResult<>(categoryPage.map(CategoryMapper::toDto));
+        Page<CategoryDto> dtoPage = categoryPage.map(category -> {
+            CategoryDto dto = CategoryMapper.toDto(category);
+            int courseCount = courseRepository.countCoursesByCategoryId(category.getId());
+            dto.setCourseCount(courseCount);
+            return dto;
+        });
+
+        return new PagedResult<>(dtoPage);
     }
 
     @Override

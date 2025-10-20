@@ -12,7 +12,9 @@ import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourse;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourse;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourse;
+import site.alphacode.alphacodecourseservice.dto.response.StaffDashboardStats;
 import site.alphacode.alphacodecourseservice.service.CourseService;
+import site.alphacode.alphacodecourseservice.service.DashboardService;
 
 import java.util.UUID;
 
@@ -22,6 +24,7 @@ import java.util.UUID;
 @Tag(name = "Courses", description = "Course management APIs")
 public class CourseController {
     private final CourseService courseService;
+    private final DashboardService dashboardService;
 
     @GetMapping("/{id}")
     @Operation(summary = "Get active course by id")
@@ -44,9 +47,9 @@ public class CourseController {
     }
 
     @GetMapping("/get-by-slug/{slug}")
-    @Operation(summary = "Get active course by slug")
-    public CourseDto getActiveCourseBySlug(@PathVariable String slug) {
-        return courseService.getActiveCourseBySlug(slug);
+    @Operation(summary = "Get course by slug")
+    public CourseDto getCourseBySlug(@PathVariable String slug) {
+        return courseService.getCourseBySlug(slug);
     }
 
     @GetMapping("/none-delete/{id}")
@@ -83,5 +86,12 @@ public class CourseController {
     @Operation(summary = "Delete course by id")
     public void delete(@PathVariable UUID id) {
         courseService.delete(id);
+    }
+
+    @GetMapping("/dashboard/stats")
+    @Operation(summary = "Get staff dashboard statistics")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public StaffDashboardStats getStaffDashboardStats() {
+        return dashboardService.getStaffDashboardStats();
     }
 }

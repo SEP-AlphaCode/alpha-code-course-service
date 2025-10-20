@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -303,6 +304,93 @@ public class LessonServiceImplement implements LessonService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
         var pagedLessons = lessonRepository.findAllLessonWithSolutionByCourseId(courseId, pageable);
         return new PagedResult<>(pagedLessons.map(LessonMapper::toLessonWithSolution));
+    }
+
+    @Override
+    @Cacheable(value = "lessons_with_solution_list", key = "{#page, #size, #search, #courseId, #sectionId, #type, #requireRobot}")
+    public PagedResult<LessonWithSolution> getAllLessons(int page, int size, String search, UUID courseId, UUID sectionId, Integer type, Boolean requireRobot) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdDate").descending());
+
+        // Optional validations to give clear errors when filters reference non-existing resources
+        if (courseId != null) {
+            courseRepository.findById(courseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại."));
+        }
+        if (sectionId != null) {
+            sectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Section với id " + sectionId + " không tồn tại."));
+        }
+
+        var pageResult = lessonRepository.findAllWithFilters(search, courseId, sectionId, type, requireRobot, pageable);
+        return new PagedResult<>(pageResult.map(LessonMapper::toLessonWithSolution));
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "lesson", allEntries = true),
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "section", allEntries = true),
+            @CacheEvict(value = "sections_list", allEntries = true)
+    })
+    public void reorderLessons(UUID sectionId, ReorderLessonsRequest request) {
+        var items = request.getLessons();
+        if (items == null || items.isEmpty()) return;
+
+        // Map: lessonId -> (newOrder, newSectionId)
+        var idToOrder = new java.util.HashMap<UUID, Integer>();
+        var idToTargetSection = new java.util.HashMap<UUID, UUID>();
+        for (var item : items) {
+            if (idToOrder.put(item.getId(), item.getOrderNumber()) != null) {
+                throw new ConflictException("Trùng lặp lesson id trong danh sách sắp xếp.");
+            }
+            idToTargetSection.put(item.getId(), item.getSectionId());
+        }
+
+        var lessonIds = idToOrder.keySet();
+        var lessons = lessonRepository.findAllById(lessonIds);
+        if (lessons.size() != lessonIds.size()) {
+            throw new ResourceNotFoundException("Một hoặc nhiều lesson không tồn tại.");
+        }
+
+        // Validate target sections exist and belong to the same course
+        var targetSectionIds = new java.util.HashSet<UUID>(idToTargetSection.values());
+        var targetSections = sectionRepository.findAllById(targetSectionIds);
+        if (targetSections.size() != targetSectionIds.size()) {
+            throw new ResourceNotFoundException("Một hoặc nhiều section đích không tồn tại.");
+        }
+        UUID expectedCourseId = targetSections.iterator().next().getCourseId();
+        boolean allTargetSameCourse = targetSections.stream().allMatch(s -> s.getCourseId().equals(expectedCourseId));
+        if (!allTargetSameCourse) {
+            throw new ConflictException("Tất cả section đích phải thuộc cùng một khóa học.");
+        }
+
+        // Validate existing lessons also belong to the same course
+        var currentSectionIds = lessons.stream().map(site.alphacode.alphacodecourseservice.entity.Lesson::getSectionId).collect(java.util.stream.Collectors.toSet());
+        var currentSections = sectionRepository.findAllById(currentSectionIds);
+        boolean allCurrentSameCourse = currentSections.stream().allMatch(s -> s.getCourseId().equals(expectedCourseId));
+        if (!allCurrentSameCourse) {
+            throw new ConflictException("Không thể di chuyển bài học giữa các khóa học khác nhau.");
+        }
+
+        // Update lessons
+        final var now = java.time.LocalDateTime.now();
+        lessons.forEach(l -> {
+            var newOrder = idToOrder.get(l.getId());
+            var newSectionId = idToTargetSection.get(l.getId());
+            if (newOrder != null) l.setOrderNumber(newOrder);
+            if (newSectionId != null) l.setSectionId(newSectionId);
+            l.setLastUpdated(now);
+        });
+
+        lessonRepository.saveAll(lessons);
+
+        // Update course lastUpdated
+        courseRepository.findById(expectedCourseId).ifPresent(c -> {
+            c.setLastUpdated(now);
+            courseRepository.save(c);
+        });
     }
 
 

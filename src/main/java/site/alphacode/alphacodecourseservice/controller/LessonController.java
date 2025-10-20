@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -83,6 +84,21 @@ public class LessonController {
         return lessonService.getAllLessonsWithSolutionBySectionId(sectionId, page, size);
     }
 
+    @GetMapping
+    @Operation(summary = "Get all lessons with filters (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public PagedResult<LessonWithSolution> getAllLessons(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID courseId,
+            @RequestParam(required = false) UUID sectionId,
+            @RequestParam(required = false) Integer type,
+            @RequestParam(required = false) Boolean requireRobot
+    ) {
+        return lessonService.getAllLessons(page, size, search, courseId, sectionId, type, requireRobot);
+    }
+
     // ------------------- CREATE -------------------
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -129,5 +145,15 @@ public class LessonController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public void delete(@PathVariable UUID lessonId) {
         lessonService.delete(lessonId);
+    }
+
+    @PutMapping("/{sectionId}/lessons/reorder")
+    @Operation(summary = "Reorder lessons within section or move between sections (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public void reorderLessons(
+            @PathVariable UUID sectionId,
+            @Valid @RequestBody ReorderLessonsRequest request
+    ) {
+        lessonService.reorderLessons(sectionId, request);
     }
 }

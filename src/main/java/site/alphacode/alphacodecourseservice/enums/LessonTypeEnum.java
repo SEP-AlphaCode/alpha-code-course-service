@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum LessonTypeEnum {
     // Type
     LESSON(1, "BÀI HỌC"),
-    TEST(2, "BÀI KIỂM TRA");
+    VIDEO(2, "VIDEO"),
+    TEST(3, "BÀI KIỂM TRA");
     private final int code;
     private final String description;
 

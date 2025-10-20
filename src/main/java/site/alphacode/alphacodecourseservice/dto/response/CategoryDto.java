@@ -29,6 +29,8 @@ public class CategoryDto extends BaseEntityDto implements Serializable {
 
     private String slug;
 
+    private Integer courseCount;
+
     @JsonProperty(value = "statusText")
     public String getStatusText() {
         return CategoryEnum.fromCode(this.getStatus());

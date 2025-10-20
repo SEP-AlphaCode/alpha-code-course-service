@@ -52,4 +52,8 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("SELECT c FROM Category c WHERE c.slug = :slug AND c.status = 1")
     Optional<Category> findActiveCategoryBySlug(@Param("slug") String slug);
+
+    // Count non-deleted categories
+    @Query("SELECT COUNT(c) FROM Category c WHERE c.status <> 0")
+    long countNoneDeleted();
 }

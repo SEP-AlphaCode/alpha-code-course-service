@@ -53,4 +53,34 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     @Query("SELECT l FROM Lesson l JOIN l.section s WHERE s.course.id = :courseId AND l.status <> 0 ORDER BY l.orderNumber ASC")
     Page<Lesson> findAllLessonWithSolutionByCourseId(@Param("courseId") UUID courseId, Pageable pageable);
 
+    // Count non-deleted lessons
+    @Query("SELECT COUNT(l) FROM Lesson l WHERE l.status <> 0")
+    long countNoneDeleted();
+
+    // Get all lessons (non-deleted) with filters and pagination for staff/admin
+    @Query("""
+        SELECT l FROM Lesson l
+        LEFT JOIN l.section s
+        WHERE l.status <> 0
+          AND (:search IS NULL OR :search = ''
+               OR LOWER(l.title) LIKE LOWER(CONCAT('%', :search, '%'))
+               OR LOWER(l.content) LIKE LOWER(CONCAT('%', :search, '%')))
+          AND (:courseId IS NULL OR s.courseId = :courseId)
+          AND (:sectionId IS NULL OR l.sectionId = :sectionId)
+          AND (:type IS NULL OR l.type = :type)
+          AND (:requireRobot IS NULL OR l.requireRobot = :requireRobot)
+        ORDER BY l.createdDate DESC
+    """)
+    Page<Lesson> findAllWithFilters(
+            @Param("search") String search,
+            @Param("courseId") UUID courseId,
+            @Param("sectionId") UUID sectionId,
+            @Param("type") Integer type,
+            @Param("requireRobot") Boolean requireRobot,
+            Pageable pageable
+    );
+
+    @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status <> 0 ORDER BY l.orderNumber ASC")
+    java.util.List<Lesson> findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(@Param("sectionId") UUID sectionId);
+
 }

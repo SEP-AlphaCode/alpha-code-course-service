@@ -20,6 +20,7 @@ import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException
 import site.alphacode.alphacodecourseservice.mapper.CourseMapper;
 import site.alphacode.alphacodecourseservice.repository.CategoryRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
+import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.CourseService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
@@ -33,6 +34,7 @@ public class CourseServiceImplement implements CourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final S3Service s3Service;
+    private final SectionRepository sectionRepository;
 
     @Override
     @Cacheable(value = "course", key = "{#id}")
@@ -46,8 +48,8 @@ public class CourseServiceImplement implements CourseService {
 
     @Override
     @Cacheable(value = "course", key = "{#slug}")
-    public CourseDto getActiveCourseBySlug(String slug) {
-        var entity = courseRepository.findActiveCourseBySlug(slug);
+    public CourseDto getCourseBySlug(String slug) {
+        var entity = courseRepository.findCourseBySlug(slug);
         if(entity.isEmpty()) {
             throw new ResourceNotFoundException("Khóa học với slug " + slug + " không tồn tại.");
         }
@@ -69,7 +71,13 @@ public class CourseServiceImplement implements CourseService {
     public PagedResult<CourseDto> getAllActiveCourses(int page, int size, String search, UUID categoryId) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
         Page<Course> course = courseRepository.findAllActiveCourse(search, categoryId, pageable);
-        return new PagedResult<>(course.map(CourseMapper::toDto));
+        Page<CourseDto> dtoPage = course.map(c -> {
+            CourseDto dto = CourseMapper.toDto(c);
+            int sectionCount = (int) sectionRepository.countActiveByCourseId(c.getId());
+            dto.setSectionCount(sectionCount);
+            return dto;
+        });
+        return new PagedResult<>(dtoPage);
     }
 
     @Override
@@ -77,7 +85,13 @@ public class CourseServiceImplement implements CourseService {
     public PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
         Page<Course> course = courseRepository.findNoneDeleteCourses(search, pageable);
-        return new PagedResult<>(course.map(CourseMapper::toDto));
+        Page<CourseDto> dtoPage = course.map(c -> {
+            CourseDto dto = CourseMapper.toDto(c);
+            int sectionCount = (int) sectionRepository.countActiveByCourseId(c.getId());
+            dto.setSectionCount(sectionCount);
+            return dto;
+        });
+        return new PagedResult<>(dtoPage);
     }
 
     @Override

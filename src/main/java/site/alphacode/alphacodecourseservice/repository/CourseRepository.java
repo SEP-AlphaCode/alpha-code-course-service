@@ -44,9 +44,18 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status = 1")
     Optional<Course> findActiveCourseById(@Param("id") UUID id);
 
-    @Query("SELECT c FROM Course c WHERE c.slug = :slug AND c.status = 1")
-    Optional<Course> findActiveCourseBySlug(@Param("slug") String slug);
+    @Query("SELECT c FROM Course c WHERE c.slug = :slug AND c.status <> 0")
+    Optional<Course> findCourseBySlug(@Param("slug") String slug);
 
     @Query("SELECT c FROM Course c WHERE c.id = :id AND c.status <> 0")
     Optional<Course>  findNoneDeleteCourseById(@Param("id") UUID id);
+
+    // Count non-deleted courses
+    @Query("SELECT COUNT(c) FROM Course c WHERE c.status <> 0")
+    long countNoneDeleted();
+
+    @Query("SELECT COUNT(c) FROM Course c WHERE c.category.id = :categoryId AND c.status <> 0")
+    int countCoursesByCategoryId(@Param("categoryId") UUID categoryId);
+
+    Optional<Course> findBySlug(String courseSlug);
 }

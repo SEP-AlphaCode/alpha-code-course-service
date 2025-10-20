@@ -6,13 +6,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import site.alphacode.alphacodecourseservice.dto.request.ReorderSectionsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSection;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateSection;
-import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.response.SectionDto;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.entity.Section;
@@ -21,9 +18,11 @@ import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException
 import site.alphacode.alphacodecourseservice.mapper.SectionMapper;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
+import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.SectionService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,15 +41,19 @@ public class SectionServiceImplement implements SectionService {
     }
 
     @Override
-    @Cacheable(value = "sections_list", key = "{#courseId, #page, #size}")
-    public PagedResult<SectionDto> getAllByCourseId(UUID courseId, int page, int size) {
-        Course course = courseRepository.findById(courseId)
+    @Cacheable(value = "sections_list", key = "{#courseId}")
+    public List<SectionDto> getAllByCourseId(UUID courseId) {
+        courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course với id " + courseId + " không tồn tại."));
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("orderNumber").ascending());
-        var pagedSections = sectionRepository.findAllByCourseId(courseId, pageable);
-        return new PagedResult<>(pagedSections.map(SectionMapper::toDto));
+        var sections = sectionRepository.findAllByCourseId(courseId);
+
+        return sections.stream()
+                .map(SectionMapper::toDto)
+                .toList();
     }
+
+
 
     @Override
     @Transactional
@@ -122,4 +125,60 @@ public class SectionServiceImplement implements SectionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + sectionId + " không tồn tại."));
         sectionRepository.delete(existing);
     }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "section", allEntries = true),
+            @CacheEvict(value = "sections_list", allEntries = true)
+    })
+    public void reorder(ReorderSectionsRequest request) {
+        var items = request.getSections();
+        if (items == null || items.isEmpty()) return;
+
+        // Build maps and validate duplicates
+        var idToOrder = new java.util.HashMap<UUID, Integer>();
+        for (var item : items) {
+            if (idToOrder.put(item.getId(), item.getOrderNumber()) != null) {
+                throw new ConflictException("Trùng lặp section id trong danh sách sắp xếp.");
+            }
+        }
+
+        var ids = idToOrder.keySet();
+        var sections = sectionRepository.findAllById(ids);
+        if (sections.size() != ids.size()) {
+            throw new ResourceNotFoundException("Một hoặc nhiều section không tồn tại.");
+        }
+
+        // Determine course and ensure all sections belong to same course
+        UUID courseId = request.getCourseId();
+        if (courseId == null) {
+            courseId = sections.iterator().next().getCourseId();
+        }
+        final UUID expectedCourseId = courseId;
+        boolean allSameCourse = sections.stream().allMatch(s -> s.getCourseId().equals(expectedCourseId));
+        if (!allSameCourse) {
+            throw new ConflictException("Tất cả section phải thuộc cùng một khóa học.");
+        }
+
+        // Apply new order
+        final var now = java.time.LocalDateTime.now();
+        sections.forEach(s -> {
+            Integer newOrder = idToOrder.get(s.getId());
+            if (newOrder != null) {
+                s.setOrderNumber(newOrder);
+                s.setLastUpdated(now);
+            }
+        });
+
+        sectionRepository.saveAll(sections);
+
+        // Update course lastUpdated
+        courseRepository.findById(expectedCourseId).ifPresent(c -> {
+            c.setLastUpdated(now);
+            courseRepository.save(c);
+        });
+    }
+
+
 }

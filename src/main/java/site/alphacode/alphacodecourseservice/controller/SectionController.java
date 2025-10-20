@@ -6,12 +6,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import site.alphacode.alphacodecourseservice.dto.request.ReorderSectionsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSection;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateSection;
-import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.response.SectionDto;
 import site.alphacode.alphacodecourseservice.service.SectionService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,16 +27,6 @@ public class SectionController {
     @Operation(summary = "Get section by id")
     public SectionDto getById(@PathVariable UUID id) {
         return sectionService.getById(id);
-    }
-
-    @GetMapping("/get-by-course/{courseId}")
-    @Operation(summary = "Get all sections by course id")
-    public PagedResult<SectionDto> getAllByCourseId(
-            @PathVariable UUID courseId,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
-    ) {
-        return sectionService.getAllByCourseId(courseId, page, size);
     }
 
     @PostMapping
@@ -57,5 +48,20 @@ public class SectionController {
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public void delete(@PathVariable UUID sectionId) {
         sectionService.delete(sectionId);
+    }
+
+    @GetMapping("/courses/{courseId}")
+    @Operation(summary = "Get all sections by course id")
+    public List<SectionDto> getByCourseId(
+            @PathVariable UUID courseId
+    ) {
+        return sectionService.getAllByCourseId(courseId);
+    }
+
+    @PutMapping("/reorder")
+    @Operation(summary = "Reorder sections (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public void reorder(@Valid @RequestBody ReorderSectionsRequest request) {
+        sectionService.reorder(request);
     }
 }

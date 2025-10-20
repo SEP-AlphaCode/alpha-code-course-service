@@ -1,6 +1,7 @@
 package site.alphacode.alphacodecourseservice.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
@@ -29,4 +30,9 @@ public interface LessonService {
     // Lấy Lesson theo Course (qua join Section → Course)
     PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size);
     PagedResult<LessonWithSolution> getAllLessonsWithSolutionByCourseId(UUID courseId, int page, int size);
+
+    // Lấy tất cả Lesson với bộ lọc
+    PagedResult<LessonWithSolution> getAllLessons(int page, int size, String search, UUID courseId, UUID sectionId, Integer type, Boolean requireRobot);
+
+    void reorderLessons(UUID sectionId, ReorderLessonsRequest request);
 }

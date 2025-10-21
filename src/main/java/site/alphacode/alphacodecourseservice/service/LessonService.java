@@ -17,6 +17,10 @@ public interface LessonService {
     LessonDto getLessonById(UUID id);
     LessonWithSolution getLessonWithSolutionById(UUID id);
 
+    // Lấy Lesson theo slug
+    LessonDto getLessonBySlug(String slug);
+    LessonWithSolution getLessonWithSolutionBySlug(String slug);
+
     // Thao tác CRUD
     LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile);
     LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile);

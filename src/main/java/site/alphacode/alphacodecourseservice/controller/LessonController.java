@@ -35,11 +35,24 @@ public class LessonController {
         return lessonService.getLessonById(id);
     }
 
+    @GetMapping("/slug/{slug}")
+    @Operation(summary = "Get active lesson by slug")
+    public LessonDto getBySlug(@PathVariable String slug) {
+        return lessonService.getLessonBySlug(slug);
+    }
+
     @GetMapping("/with-solution/{id}")
     @Operation(summary = "Get lesson with solution by id (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution getLessonWithSolutionById(@PathVariable UUID id) {
         return lessonService.getLessonWithSolutionById(id);
+    }
+
+    @GetMapping("/with-solution/slug/{slug}")
+    @Operation(summary = "Get lesson with solution by slug (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public LessonWithSolution getLessonWithSolutionBySlug(@PathVariable String slug) {
+        return lessonService.getLessonWithSolutionBySlug(slug);
     }
 
     @GetMapping("/get-by-course/{courseId}")

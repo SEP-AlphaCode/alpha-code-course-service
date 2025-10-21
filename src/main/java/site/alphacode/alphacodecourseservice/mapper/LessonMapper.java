@@ -18,6 +18,7 @@ public class LessonMapper {
         learnLesson.setRequireRobot(lesson.getRequireRobot());
         learnLesson.setType(lesson.getType());
         learnLesson.setVideoUrl(lesson.getVideoUrl());
+        learnLesson.setSlug(lesson.getSlug());
         return learnLesson;
     }
 
@@ -37,6 +38,7 @@ public class LessonMapper {
         lessonDto.setLastUpdated(lesson.getLastUpdated());
         lessonDto.setType(lesson.getType());
         lessonDto.setVideoUrl(lesson.getVideoUrl());
+        lessonDto.setSlug(lesson.getSlug());
 
         return lessonDto;
     }
@@ -58,6 +60,7 @@ public class LessonMapper {
         lessonWithSolution.setSolution(lesson.getSolution());
         lessonWithSolution.setType(lesson.getType());
         lessonWithSolution.setVideoUrl(lesson.getVideoUrl());
+        lessonWithSolution.setSlug(lesson.getSlug());
 
         return lessonWithSolution;
     }

@@ -29,6 +29,7 @@ import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.LessonService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
+import site.alphacode.alphacodecourseservice.util.SlugHelper;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -83,12 +84,30 @@ public class LessonServiceImplement implements LessonService {
     }
 
     @Override
+    @Cacheable(value = "lesson_by_slug", key = "#slug")
+    public LessonDto getLessonBySlug(String slug) {
+        Lesson lesson = lessonRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với slug " + slug + " không tồn tại."));
+        return LessonMapper.toDto(lesson);
+    }
+
+    @Override
+    @Cacheable(value = "lesson_with_solution_by_slug", key = "#slug")
+    public LessonWithSolution getLessonWithSolutionBySlug(String slug) {
+        Lesson lesson = lessonRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Bài học với slug " + slug + " không tồn tại."));
+        return LessonMapper.toLessonWithSolution(lesson);
+    }
+
+    @Override
     @Transactional
     @CachePut(value = "lesson", key = "{#result.id}")
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution", allEntries = true),
+            @CacheEvict(value = "lesson_by_slug", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile) {
         // Check title trùng
@@ -130,6 +149,7 @@ public class LessonServiceImplement implements LessonService {
                 .sectionId(createLesson.getSectionId())
                 .createdDate(LocalDateTime.now())
                 .lastUpdated(null)
+                .slug(SlugHelper.toSlug(createLesson.getTitle()))
                 .build();
 
         Lesson saved = lessonRepository.save(lesson);
@@ -149,7 +169,9 @@ public class LessonServiceImplement implements LessonService {
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution", allEntries = true),
+            @CacheEvict(value = "lesson_by_slug", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile) {
         Lesson existing = lessonRepository.findById(lessonId)
@@ -195,6 +217,7 @@ public class LessonServiceImplement implements LessonService {
         existing.setOrderNumber(updateLesson.getOrderNumber());
         existing.setLastUpdated(LocalDateTime.now());
         existing.setSectionId(updateLesson.getSectionId());
+        existing.setSlug(SlugHelper.toSlug(updateLesson.getTitle()));
 
         Lesson saved = lessonRepository.save(existing);
 
@@ -211,7 +234,9 @@ public class LessonServiceImplement implements LessonService {
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution", allEntries = true),
+            @CacheEvict(value = "lesson_by_slug", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson, MultipartFile videoFile) {
         Lesson existing = lessonRepository.findById(lessonId)
@@ -227,6 +252,7 @@ public class LessonServiceImplement implements LessonService {
             lessonRepository.findByTitle(patchLesson.getTitle())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
             existing.setTitle(patchLesson.getTitle());
+            existing.setSlug(SlugHelper.toSlug(patchLesson.getTitle()));
         }
 
         if (videoFile != null && !videoFile.isEmpty()) {
@@ -265,7 +291,9 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson", key = "{#lessonId}"),
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution", allEntries = true),
+            @CacheEvict(value = "lesson_by_slug", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public void delete(UUID lessonId) {
         Lesson existing = lessonRepository.findById(lessonId)
@@ -392,6 +420,4 @@ public class LessonServiceImplement implements LessonService {
             courseRepository.save(c);
         });
     }
-
-
 }

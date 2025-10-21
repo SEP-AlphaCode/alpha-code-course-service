@@ -20,6 +20,8 @@ import java.util.UUID;
 public class LessonDto extends BaseEntityDto implements Serializable {
     private UUID id;
 
+    private String slug;
+
     private String title;
 
     private String content;

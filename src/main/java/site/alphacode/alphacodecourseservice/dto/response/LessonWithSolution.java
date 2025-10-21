@@ -19,6 +19,8 @@ import java.util.UUID;
 public class LessonWithSolution extends BaseEntityDto implements Serializable {
     private UUID id;
 
+    private String slug;
+
     private String title;
 
     private String content;

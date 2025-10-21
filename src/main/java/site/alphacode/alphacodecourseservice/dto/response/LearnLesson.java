@@ -15,6 +15,7 @@ import java.util.UUID;
 @SuperBuilder
 public class LearnLesson {
     private UUID id;
+    private String slug;
     private String title;
     private String content;
     private String videoUrl;

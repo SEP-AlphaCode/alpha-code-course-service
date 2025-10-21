@@ -34,6 +34,10 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     @Query("SELECT l FROM Lesson l WHERE l.id = :id AND l.status = 1")
     Optional<Lesson> findActiveById(@Param("id") UUID id);
 
+    // Lấy lesson theo slug
+    @Query("SELECT l FROM Lesson l WHERE l.slug = :slug AND l.status <> 0")
+    Optional<Lesson> findBySlug(@Param("slug") String slug);
+
     // Max order number theo Section
     @Query("SELECT COALESCE(MAX(l.orderNumber), 0) FROM Lesson l WHERE l.sectionId = :sectionId")
     Optional<Integer> findMaxOrderNumberBySectionId(@Param("sectionId") UUID sectionId);

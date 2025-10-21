@@ -18,6 +18,7 @@ import java.util.UUID;
 public class AccountLessonWithDuration implements Serializable {
     private UUID id;
     private String title;
+    private String slug;
     private Integer duration;
     private Integer status;
     @JsonProperty(value = "typeStatus")

@@ -15,7 +15,7 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
 
     @Query("""
     SELECT new site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration(
-        l.id, l.title, l.duration, al.status
+        l.id, l.title, l.slug, l.duration, al.status
     )
     FROM AccountLesson al
     JOIN Lesson l ON al.lessonId = l.id

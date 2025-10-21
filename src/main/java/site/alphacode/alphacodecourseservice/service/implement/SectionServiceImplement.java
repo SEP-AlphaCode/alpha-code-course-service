@@ -15,13 +15,15 @@ import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.entity.Section;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
+import site.alphacode.alphacodecourseservice.mapper.LessonMapper;
 import site.alphacode.alphacodecourseservice.mapper.SectionMapper;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
-import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
+import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.SectionService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +33,22 @@ public class SectionServiceImplement implements SectionService {
 
     private final SectionRepository sectionRepository;
     private final CourseRepository courseRepository;
+    // Inject lesson repository to fetch lessons for sections
+    private final LessonRepository lessonRepository;
 
     @Override
     @Cacheable(value = "section", key = "#id")
     public SectionDto getById(UUID id) {
         Section section = sectionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + id + " không tồn tại."));
-        return SectionMapper.toDto(section);
+        SectionDto dto = SectionMapper.toDto(section);
+        // Populate lessons list ordered and non-deleted
+        var lessons = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(section.getId())
+                .stream()
+                .map(LessonMapper::toDto)
+                .toList();
+        dto.setLessons(lessons);
+        return dto;
     }
 
     @Override
@@ -49,7 +60,15 @@ public class SectionServiceImplement implements SectionService {
         var sections = sectionRepository.findAllByCourseId(courseId);
 
         return sections.stream()
-                .map(SectionMapper::toDto)
+                .map(s -> {
+                    var dto = SectionMapper.toDto(s);
+                    var lessons = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(s.getId())
+                            .stream()
+                            .map(LessonMapper::toDto)
+                            .toList();
+                    dto.setLessons(lessons);
+                    return dto;
+                })
                 .toList();
     }
 
@@ -87,7 +106,10 @@ public class SectionServiceImplement implements SectionService {
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
-        return SectionMapper.toDto(saved);
+        SectionDto dto = SectionMapper.toDto(saved);
+        // Newly created section has no lessons yet
+        dto.setLessons(Collections.emptyList());
+        return dto;
     }
 
     @Override
@@ -111,7 +133,14 @@ public class SectionServiceImplement implements SectionService {
 
         Section saved = sectionRepository.save(existing);
 
-        return SectionMapper.toDto(saved);
+        SectionDto dto = SectionMapper.toDto(saved);
+        // Populate lessons for updated section
+        var lessons = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(saved.getId())
+                .stream()
+                .map(LessonMapper::toDto)
+                .toList();
+        dto.setLessons(lessons);
+        return dto;
     }
 
     @Override

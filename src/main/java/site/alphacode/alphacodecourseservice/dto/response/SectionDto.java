@@ -9,6 +9,7 @@ import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.SectionStatusEnum;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -20,6 +21,8 @@ public class SectionDto extends BaseEntityDto implements Serializable {
     private String title;
     private Integer orderNumber;
     private UUID courseId;
+    // Add lessons list to include lessons inside section in responses
+    private List<LessonDto> lessons;
 
     @JsonProperty(value = "statusText")
     public String getStatusText() {

@@ -2,6 +2,8 @@ package site.alphacode.alphacodecourseservice.service.implement;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -44,7 +46,9 @@ public class LessonServiceImplement implements LessonService {
     private final SectionRepository sectionRepository;
     private final CourseRepository courseRepository;
     private final S3Service s3Service;
+    private final CacheManager cacheManager;
 
+    // ==================== GET ====================
     @Override
     @Cacheable(value = "lesson", key = "#id")
     public LessonDto getLessonById(UUID id) {
@@ -99,9 +103,10 @@ public class LessonServiceImplement implements LessonService {
         return LessonMapper.toLessonWithSolution(lesson);
     }
 
+    // ==================== CREATE ====================
     @Override
     @Transactional
-    @CachePut(value = "lesson", key = "{#result.id}")
+    @CachePut(value = "lesson", key = "#result.id")
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
@@ -110,22 +115,16 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile) {
-        // Check title trùng
         lessonRepository.findByTitle(createLesson.getTitle())
                 .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
 
-        // Lấy Section
         Section section = sectionRepository.findById(createLesson.getSectionId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Section với id " + createLesson.getSectionId() + " không tồn tại."
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + createLesson.getSectionId() + " không tồn tại."));
 
         Course course = section.getCourse();
 
-        // Max order
         int maxOrder = lessonRepository.findMaxOrderNumberBySectionId(createLesson.getSectionId()).orElse(0);
 
-        // Upload video nếu có
         String videoUrl = null;
         if (videoFile != null && !videoFile.isEmpty()) {
             try {
@@ -154,18 +153,26 @@ public class LessonServiceImplement implements LessonService {
 
         Lesson saved = lessonRepository.save(lesson);
 
-        // Cập nhật Course
+        // Update course
         course.setTotalLessons(course.getTotalLessons() + 1);
         course.setTotalDuration(course.getTotalDuration() + saved.getDuration());
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
+        // Evict course cache manually
+        Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(course.getId());
+            courseCache.evict(course.getSlug());
+        }
+
         return LessonMapper.toLessonWithSolution(saved);
     }
 
+    // ==================== UPDATE ====================
     @Override
     @Transactional
-    @CachePut(value = "lesson", key = "{#lessonId}")
+    @CachePut(value = "lesson", key = "#lessonId")
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
@@ -177,20 +184,15 @@ public class LessonServiceImplement implements LessonService {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
-        // Check trùng title
         if (!existing.getTitle().equals(updateLesson.getTitle())) {
             lessonRepository.findByTitle(updateLesson.getTitle())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
         }
 
-        // Lấy Section và Course
         Section section = sectionRepository.findById(updateLesson.getSectionId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Section với id " + updateLesson.getSectionId() + " không tồn tại."
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Section với id " + updateLesson.getSectionId() + " không tồn tại."));
         Course course = section.getCourse();
 
-        // Upload video nếu có
         String videoUrl = existing.getVideoUrl();
         if (videoFile != null && !videoFile.isEmpty()) {
             try {
@@ -201,7 +203,6 @@ public class LessonServiceImplement implements LessonService {
             }
         }
 
-        // Update duration Course nếu thay đổi
         if (!Objects.equals(existing.getDuration(), updateLesson.getDuration())) {
             course.setTotalDuration(course.getTotalDuration() - existing.getDuration() + updateLesson.getDuration());
         }
@@ -221,16 +222,23 @@ public class LessonServiceImplement implements LessonService {
 
         Lesson saved = lessonRepository.save(existing);
 
-        // Update course lastUpdated
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
+
+        // Evict course cache manually
+        Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(course.getId());
+            courseCache.evict(course.getSlug());
+        }
 
         return LessonMapper.toLessonWithSolution(saved);
     }
 
+    // ==================== PATCH ====================
     @Override
     @Transactional
-    @CachePut(value = "lesson", key = "{#lessonId}")
+    @CachePut(value = "lesson", key = "#lessonId")
     @Caching(evict = {
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
@@ -275,20 +283,26 @@ public class LessonServiceImplement implements LessonService {
         existing.setLastUpdated(LocalDateTime.now());
         Lesson saved = lessonRepository.save(existing);
 
-        // Update course duration nếu thay đổi
+        // Update course duration if changed
         if (patchLesson.getDuration() != null) {
             course.setTotalDuration(course.getTotalDuration() - oldDuration + saved.getDuration());
         }
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
+        Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(course.getId());
+            courseCache.evict(course.getSlug());
+        }
+
         return LessonMapper.toLessonWithSolution(saved);
     }
 
-    @Override
+    // ==================== DELETE ====================
     @Transactional
     @Caching(evict = {
-            @CacheEvict(value = "lesson", key = "{#lessonId}"),
+            @CacheEvict(value = "lesson", key = "#lessonId"),
             @CacheEvict(value = "lessons_list", allEntries = true),
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true),
@@ -305,13 +319,22 @@ public class LessonServiceImplement implements LessonService {
 
         lessonRepository.delete(existing);
 
-        // Cập nhật course
-        course.setTotalLessons(course.getTotalLessons() - 1);
-        course.setTotalDuration(course.getTotalDuration() - existing.getDuration());
+        int totalDuration = lessonRepository.sumDurationByCourseId(course.getId()).orElse(0);
+        int totalLessons = lessonRepository.countByCourseId(course.getId());
+
+        course.setTotalDuration(totalDuration);
+        course.setTotalLessons(totalLessons);
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
+
+        Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(course.getId());
+            courseCache.evict(course.getSlug());
+        }
     }
 
+    // ==================== LIST BY COURSE ====================
     @Override
     @Cacheable(value = "lessons_list", key = "{#courseId, #page, #size}")
     public PagedResult<LessonDto> getActiveLessonsByCourseId(UUID courseId, int page, int size) {
@@ -339,7 +362,6 @@ public class LessonServiceImplement implements LessonService {
     public PagedResult<LessonWithSolution> getAllLessons(int page, int size, String search, UUID courseId, UUID sectionId, Integer type, Boolean requireRobot) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdDate").descending());
 
-        // Optional validations to give clear errors when filters reference non-existing resources
         if (courseId != null) {
             courseRepository.findById(courseId)
                     .orElseThrow(() -> new ResourceNotFoundException("Khóa học với id " + courseId + " không tồn tại."));
@@ -353,6 +375,7 @@ public class LessonServiceImplement implements LessonService {
         return new PagedResult<>(pageResult.map(LessonMapper::toLessonWithSolution));
     }
 
+    // ==================== REORDER ====================
     @Override
     @Transactional
     @Caching(evict = {

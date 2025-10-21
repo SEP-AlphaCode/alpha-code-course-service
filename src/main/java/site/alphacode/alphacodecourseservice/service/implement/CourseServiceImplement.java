@@ -26,6 +26,7 @@ import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -153,7 +154,7 @@ public class CourseServiceImplement implements CourseService {
             throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
 
-        if (courseRepository.existsByName(updateCourse.getName())) {
+        if (!Objects.equals(updateCourse.getName(), existing.get().getName()) && courseRepository.existsByName(updateCourse.getName())) {
             throw new ConflictException("Khóa học với tên " + updateCourse.getName() + " đã tồn tại.");
         }
 
@@ -173,10 +174,8 @@ public class CourseServiceImplement implements CourseService {
             if (existing.get().getTotalLessons() <= 0) {
                 throw new BadRequestException("Không thể active khóa học vì chưa có lesson nào.");
             }
+            existing.get().setStatus(updateCourse.getStatus());
         }
-
-
-
 
         // Xử lý ảnh (PUT => bắt buộc có image file hoặc imageUrl)
         if (updateCourse.getImage() != null && !updateCourse.getImage().isEmpty()) {

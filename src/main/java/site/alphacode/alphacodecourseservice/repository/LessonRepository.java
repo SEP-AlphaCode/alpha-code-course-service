@@ -87,4 +87,11 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status <> 0 ORDER BY l.orderNumber ASC")
     java.util.List<Lesson> findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(@Param("sectionId") UUID sectionId);
 
+    // Tính tổng duration của tất cả lesson thuộc course
+    @Query("SELECT SUM(l.duration) FROM Lesson l WHERE l.section.course.id = :courseId")
+    Optional<Integer> sumDurationByCourseId(@Param("courseId") UUID courseId);
+
+    // Đếm số lesson thuộc course
+    @Query("SELECT COUNT(l) FROM Lesson l WHERE l.section.course.id = :courseId")
+    int countByCourseId(@Param("courseId") UUID courseId);
 }

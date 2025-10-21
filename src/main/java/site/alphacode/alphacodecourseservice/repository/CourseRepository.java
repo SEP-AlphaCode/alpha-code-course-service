@@ -59,3 +59,4 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     Optional<Course> findBySlug(String courseSlug);
 }
+

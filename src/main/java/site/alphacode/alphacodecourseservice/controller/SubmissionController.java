@@ -28,7 +28,7 @@ public class SubmissionController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Create a new submission")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
     public SubmissionDto createSubmission(CreateSubmission createSubmission) {
         return submissionService.createSubmission(createSubmission);
     }

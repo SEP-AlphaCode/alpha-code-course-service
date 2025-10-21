@@ -24,14 +24,15 @@ public class AccountLessonController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get account course by id")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
     public Optional<AccountLessonWithLesson> getAccountLessonWithLesson(@PathVariable UUID id) {
         return accountLessonService.getAccountLessionWithLessonById(id);
     }
 
     @GetMapping("")
     @Operation(summary = "Get account lessons with duration and title by courseId and accountId")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
+
     public PagedResult<AccountLessonWithDuration> getAccountLessonsWithLessonDurationAndTitleByCourseIdAndAccountId(@RequestParam UUID courseId, @RequestParam UUID accountId, @RequestParam(value = "page", defaultValue = "1") int page,
                                                                                                                     @RequestParam(value = "size", defaultValue = "10") int size) {
         return accountLessonService.getLessonDurationAndTitleByCourseIdAndAccountId(courseId, accountId, page, size);
@@ -39,14 +40,16 @@ public class AccountLessonController {
 
     @PostMapping()
     @Operation(summary = "Create account lesson")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
+
     public AccountLessonWithLesson createAccountLesson(CreateAccountLesson createAccountLesson) {
         return accountLessonService.create(createAccountLesson);
     }
 
     @PostMapping("/mark-complete/{accountLessonId}")
     @Operation(summary = "Mark account lesson as complete")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
+
     public void markAccountLessonAsComplete(@PathVariable UUID accountLessonId) {
         accountLessonService.markComplete(accountLessonId);
     }

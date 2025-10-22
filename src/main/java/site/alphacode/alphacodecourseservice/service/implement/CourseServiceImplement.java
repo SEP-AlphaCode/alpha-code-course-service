@@ -36,6 +36,7 @@ public class CourseServiceImplement implements CourseService {
     private final CategoryRepository categoryRepository;
     private final S3Service s3Service;
     private final SectionRepository sectionRepository;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     @Override
     @Cacheable(value = "course", key = "{#id}")
@@ -134,6 +135,11 @@ public class CourseServiceImplement implements CourseService {
             }
 
             Course savedEntity = courseRepository.save(course);
+            // Evict slug cache so getCourseBySlug will reflect the new course
+            org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+            if (courseCache != null) {
+                courseCache.evict(savedEntity.getSlug());
+            }
             return CourseMapper.toDto(savedEntity);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi tạo Category", e);
@@ -153,6 +159,7 @@ public class CourseServiceImplement implements CourseService {
         if(existing.isEmpty()) {
             throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
+        String oldSlug = existing.get().getSlug();
 
         if (!Objects.equals(updateCourse.getName(), existing.get().getName()) && courseRepository.existsByName(updateCourse.getName())) {
             throw new ConflictException("Khóa học với tên " + updateCourse.getName() + " đã tồn tại.");
@@ -199,6 +206,13 @@ public class CourseServiceImplement implements CourseService {
         }
 
         Course savedEntity = courseRepository.save(existing.get());
+
+        // Evict slug cache entries (old & new) so slug-based cache is consistent
+        org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(oldSlug);
+            courseCache.evict(savedEntity.getSlug());
+        }
         return CourseMapper.toDto(savedEntity);
     }
 
@@ -215,6 +229,7 @@ public class CourseServiceImplement implements CourseService {
         if (existing.isEmpty()) {
             throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
+        String oldSlug = existing.get().getSlug();
 
         if (patchCourse.getName() != null && !patchCourse.getName().isBlank()
                 && !patchCourse.getName().equals(existing.get().getName())
@@ -274,6 +289,13 @@ public class CourseServiceImplement implements CourseService {
         }
 
         Course savedEntity = courseRepository.save(existing.get());
+
+        // Evict slug cache entries (old & new)
+        org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(oldSlug);
+            courseCache.evict(savedEntity.getSlug());
+        }
         return CourseMapper.toDto(savedEntity);
     }
 
@@ -293,6 +315,12 @@ public class CourseServiceImplement implements CourseService {
         existing.get().setStatus(0); // set trạng thái xóa mềm
         existing.get().setLastUpdated(LocalDateTime.now());
         courseRepository.save(existing.get());
+
+        // Evict slug cache so stale slug lookup won't return deleted course
+        org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(existing.get().getSlug());
+        }
     }
 
 }

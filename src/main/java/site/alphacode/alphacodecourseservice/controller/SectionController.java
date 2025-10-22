@@ -58,10 +58,10 @@ public class SectionController {
         return sectionService.getAllByCourseId(courseId);
     }
 
-    @PutMapping("/reorder")
+    @PutMapping("/{courseId}/sections/reorder")
     @Operation(summary = "Reorder sections (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public void reorder(@Valid @RequestBody ReorderSectionsRequest request) {
-        sectionService.reorder(request);
+    public void reorder(@PathVariable("courseId") UUID courseId,@Valid @RequestBody ReorderSectionsRequest request) {
+        sectionService.reorder(courseId, request);
     }
 }

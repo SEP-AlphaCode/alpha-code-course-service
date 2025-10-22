@@ -16,5 +16,5 @@ public interface  SectionService {
     SectionDto create(CreateSection createSection);
     SectionDto update(UUID sectionId, UpdateSection updateSection);
     void delete(UUID sectionId);
-    void reorder(ReorderSectionsRequest request);
+    void reorder(UUID courseId ,ReorderSectionsRequest request);
 }

@@ -10,8 +10,6 @@ import java.util.UUID;
 
 @Data
 public class ReorderSectionsRequest {
-    private UUID courseId;  // Course ID để verify
-
     @NotNull
     @NotEmpty
     private List<SectionOrderDto> sections;

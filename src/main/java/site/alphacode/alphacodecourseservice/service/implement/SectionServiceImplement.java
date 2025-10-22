@@ -161,7 +161,7 @@ public class SectionServiceImplement implements SectionService {
             @CacheEvict(value = "section", allEntries = true),
             @CacheEvict(value = "sections_list", allEntries = true)
     })
-    public void reorder(ReorderSectionsRequest request) {
+    public void reorder(UUID courseId ,ReorderSectionsRequest request) {
         var items = request.getSections();
         if (items == null || items.isEmpty()) return;
 
@@ -180,7 +180,6 @@ public class SectionServiceImplement implements SectionService {
         }
 
         // Determine course and ensure all sections belong to same course
-        UUID courseId = request.getCourseId();
         if (courseId == null) {
             courseId = sections.iterator().next().getCourseId();
         }

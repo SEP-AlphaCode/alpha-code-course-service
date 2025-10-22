@@ -115,7 +115,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile) {
-        lessonRepository.findByTitle(createLesson.getTitle())
+        lessonRepository.findByTitleAndSectionId(createLesson.getTitle(), createLesson.getSectionId())
                 .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
 
         Section section = sectionRepository.findById(createLesson.getSectionId())
@@ -185,7 +185,7 @@ public class LessonServiceImplement implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
         if (!existing.getTitle().equals(updateLesson.getTitle())) {
-            lessonRepository.findByTitle(updateLesson.getTitle())
+            lessonRepository.findByTitleAndSectionId(updateLesson.getTitle(), updateLesson.getSectionId())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
         }
 
@@ -257,7 +257,7 @@ public class LessonServiceImplement implements LessonService {
         int oldDuration = existing.getDuration();
 
         if (patchLesson.getTitle() != null && !existing.getTitle().equals(patchLesson.getTitle())) {
-            lessonRepository.findByTitle(patchLesson.getTitle())
+            lessonRepository.findByTitleAndSectionId(patchLesson.getTitle(), patchLesson.getSectionId())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
             existing.setTitle(patchLesson.getTitle());
             existing.setSlug(SlugHelper.toSlug(patchLesson.getTitle()));

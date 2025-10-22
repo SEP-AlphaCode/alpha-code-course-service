@@ -18,9 +18,10 @@ import site.alphacode.alphacodecourseservice.exception.BadRequestException;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.CourseMapper;
-import site.alphacode.alphacodecourseservice.repository.CategoryRepository;
-import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
+import site.alphacode.alphacodecourseservice.repository.CourseRepository;
+import site.alphacode.alphacodecourseservice.repository.CategoryRepository;
+import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.CourseService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
@@ -36,6 +37,7 @@ public class CourseServiceImplement implements CourseService {
     private final CategoryRepository categoryRepository;
     private final S3Service s3Service;
     private final SectionRepository sectionRepository;
+    private final LessonRepository lessonRepository;
     private final org.springframework.cache.CacheManager cacheManager;
 
     @Override
@@ -307,22 +309,67 @@ public class CourseServiceImplement implements CourseService {
             @CacheEvict(value = "course", key = "{#id}"),
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
-            @CacheEvict(value = "courses_list", allEntries = true)
+            @CacheEvict(value = "courses_list", allEntries = true),
+            // Evict related caches for sections and lessons of the course being deleted
+            @CacheEvict(value = "section", allEntries = true),
+            @CacheEvict(value = "sections_list", allEntries = true),
+            @CacheEvict(value = "lesson", allEntries = true),
+            @CacheEvict(value = "lessons_list", allEntries = true),
+            @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution", allEntries = true),
+            @CacheEvict(value = "lesson_by_slug", allEntries = true),
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
     public void delete(UUID id) {
-        var existing = courseRepository.findNoneDeleteCourseById(id);
-        if(existing.isEmpty()) {
+        var existingOpt = courseRepository.findNoneDeleteCourseById(id);
+        if (existingOpt.isEmpty()) {
             throw new ResourceNotFoundException("Khóa học với id " + id + " không tồn tại.");
         }
-        existing.get().setStatus(0); // set trạng thái xóa mềm
-        existing.get().setLastUpdated(LocalDateTime.now());
-        courseRepository.save(existing.get());
+        var existing = existingOpt.get();
+        final var now = LocalDateTime.now();
 
-        // Evict slug cache so stale slug lookup won't return deleted course
-        org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+        // Soft delete all lessons and sections that belong to this course
+        var sections = sectionRepository.findAllByCourseId(id); // only non-deleted
+        var sectionIds = new java.util.ArrayList<java.util.UUID>();
+        for (var s : sections) {
+            sectionIds.add(s.getId());
+            var lessons = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(s.getId());
+            if (!lessons.isEmpty()) {
+                for (var l : lessons) {
+                    l.setStatus(0);
+                    l.setLastUpdated(now);
+                }
+                lessonRepository.saveAll(lessons);
+            }
+            s.setStatus(0);
+            s.setLastUpdated(now);
+        }
+        if (!sections.isEmpty()) {
+            sectionRepository.saveAll(sections);
+        }
+
+        // Soft delete course and reset aggregates
+        existing.setStatus(0);
+        existing.setTotalLessons(0);
+        existing.setTotalDuration(0);
+        existing.setLastUpdated(now);
+        courseRepository.save(existing);
+
+        // Evict specific caches by key where possible
+        var courseCache = cacheManager.getCache("course");
         if (courseCache != null) {
-            courseCache.evict(existing.get().getSlug());
+            // Evict slug cache so stale slug lookup won't return deleted course
+            courseCache.evict(existing.getSlug());
+        }
+        var sectionCache = cacheManager.getCache("section");
+        if (sectionCache != null) {
+            for (var sid : sectionIds) {
+                sectionCache.evict(sid);
+            }
+        }
+        var sectionsListCache = cacheManager.getCache("sections_list");
+        if (sectionsListCache != null) {
+            sectionsListCache.evict(existing.getId());
         }
     }
-
 }

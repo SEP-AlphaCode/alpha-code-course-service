@@ -94,4 +94,6 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     // Đếm số lesson thuộc course
     @Query("SELECT COUNT(l) FROM Lesson l WHERE l.section.course.id = :courseId")
     int countByCourseId(@Param("courseId") UUID courseId);
+
+    Optional<Lesson> findByTitleAndSectionId(String title, UUID sectionId);
 }

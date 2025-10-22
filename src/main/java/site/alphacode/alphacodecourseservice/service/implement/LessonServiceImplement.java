@@ -345,6 +345,16 @@ public class LessonServiceImplement implements LessonService {
         course.setLastUpdated(LocalDateTime.now());
         courseRepository.save(course);
 
+        // Evict section cache for the affected section and sections_list for the course
+        org.springframework.cache.Cache sectionCache = cacheManager.getCache("section");
+        if (sectionCache != null) {
+            sectionCache.evict(sectionId);
+        }
+        org.springframework.cache.Cache sectionsListCache = cacheManager.getCache("sections_list");
+        if (sectionsListCache != null) {
+            sectionsListCache.evict(course.getId());
+        }
+
         Cache courseCache = cacheManager.getCache("course");
         if (courseCache != null) {
             courseCache.evict(course.getId());

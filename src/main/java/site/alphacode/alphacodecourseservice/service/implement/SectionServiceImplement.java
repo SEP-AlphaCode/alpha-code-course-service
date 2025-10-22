@@ -35,6 +35,7 @@ public class SectionServiceImplement implements SectionService {
     private final CourseRepository courseRepository;
     // Inject lesson repository to fetch lessons for sections
     private final LessonRepository lessonRepository;
+    private final org.springframework.cache.CacheManager cacheManager;
 
     @Override
     @Cacheable(value = "section", key = "#id")
@@ -152,7 +153,49 @@ public class SectionServiceImplement implements SectionService {
     public void delete(UUID sectionId) {
         Section existing = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + sectionId + " không tồn tại."));
+
+        Course course = existing.getCourse();
+        UUID courseId = existing.getCourseId();
+
+        // Remember order to shift subsequent sections
+        int deletedOrder = existing.getOrderNumber();
+
+        // Delete all lessons in this section first
+        var lessonsInSection = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(existing.getId());
+        if (!lessonsInSection.isEmpty()) {
+            lessonRepository.deleteAll(lessonsInSection);
+        }
+
+        // Delete the section
         sectionRepository.delete(existing);
+
+        // Shift down orderNumber for sections in the same course that were after the deleted section
+        var sectionsInCourse = sectionRepository.findAllByCourseId(courseId);
+        var sectionsToUpdate = sectionsInCourse.stream()
+                .filter(s -> s.getOrderNumber() > deletedOrder)
+                .peek(s -> {
+                    s.setOrderNumber(s.getOrderNumber() - 1);
+                    s.setLastUpdated(LocalDateTime.now());
+                })
+                .toList();
+        if (!sectionsToUpdate.isEmpty()) {
+            sectionRepository.saveAll(sectionsToUpdate);
+        }
+
+        // Recalculate course aggregates (total lessons & duration)
+        int totalDuration = lessonRepository.sumDurationByCourseId(courseId).orElse(0);
+        int totalLessons = lessonRepository.countByCourseId(courseId);
+        course.setTotalDuration(totalDuration);
+        course.setTotalLessons(totalLessons);
+        course.setLastUpdated(LocalDateTime.now());
+        courseRepository.save(course);
+
+        // Evict course cache
+        org.springframework.cache.Cache courseCache = cacheManager.getCache("course");
+        if (courseCache != null) {
+            courseCache.evict(course.getId());
+            courseCache.evict(course.getSlug());
+        }
     }
 
     @Override

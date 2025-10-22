@@ -317,8 +317,26 @@ public class LessonServiceImplement implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + existing.getSectionId() + " không tồn tại."));
         Course course = section.getCourse();
 
+        // Remember the order and section before deletion so we can shift subsequent lessons
+        int deletedOrder = existing.getOrderNumber();
+        UUID sectionId = existing.getSectionId();
+
         lessonRepository.delete(existing);
 
+        // Shift down orderNumber for lessons in the same section that were after the deleted lesson
+        var lessonsInSection = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(sectionId);
+        var toUpdate = lessonsInSection.stream()
+                .filter(l -> l.getOrderNumber() > deletedOrder)
+                .peek(l -> {
+                    l.setOrderNumber(l.getOrderNumber() - 1);
+                    l.setLastUpdated(LocalDateTime.now());
+                })
+                .toList();
+        if (!toUpdate.isEmpty()) {
+            lessonRepository.saveAll(toUpdate);
+        }
+
+        // Recalculate course aggregates after deletion
         int totalDuration = lessonRepository.sumDurationByCourseId(course.getId()).orElse(0);
         int totalLessons = lessonRepository.countByCourseId(course.getId());
 

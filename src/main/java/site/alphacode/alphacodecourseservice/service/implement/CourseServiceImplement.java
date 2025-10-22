@@ -174,6 +174,8 @@ public class CourseServiceImplement implements CourseService {
             if (existing.get().getTotalLessons() <= 0) {
                 throw new BadRequestException("Không thể active khóa học vì chưa có lesson nào.");
             }
+        }
+        else {
             existing.get().setStatus(updateCourse.getStatus());
         }
 
@@ -248,6 +250,8 @@ public class CourseServiceImplement implements CourseService {
             if (existing.get().getTotalLessons() <= 0) {
                 throw new BadRequestException("Không thể active khóa học vì chưa có lesson nào.");
             }
+        }
+        else if(patchCourse.getStatus() != null){
             existing.get().setStatus(patchCourse.getStatus());
         }
         existing.get().setLastUpdated(LocalDateTime.now());

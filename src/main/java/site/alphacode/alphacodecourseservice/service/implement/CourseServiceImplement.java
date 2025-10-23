@@ -51,6 +51,15 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
+    @Cacheable(value = "course", key = "{#id}")
+    public PagedResult<CourseDto> getNoneDeleteCoursesByCategoryId(UUID id, int page, int size) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        Page<Course> course = courseRepository.findNoneDeleteCoursesByCategoryId(id, pageable);
+        Page<CourseDto> dtoPage = course.map(CourseMapper::toDto);
+        return new PagedResult<>(dtoPage);
+    }
+
+    @Override
     @Cacheable(value = "course", key = "{#slug}")
     public CourseDto getCourseBySlug(String slug) {
         var entity = courseRepository.findCourseBySlug(slug);

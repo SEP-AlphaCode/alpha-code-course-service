@@ -58,5 +58,8 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     int countCoursesByCategoryId(@Param("categoryId") UUID categoryId);
 
     Optional<Course> findBySlug(String courseSlug);
+
+    @Query("SELECT c FROM Course c WHERE c.category.id = :categoryId AND c.status <> 0")
+    Page<Course> findNoneDeleteCoursesByCategoryId(UUID categoryId, Pageable pageable);
 }
 

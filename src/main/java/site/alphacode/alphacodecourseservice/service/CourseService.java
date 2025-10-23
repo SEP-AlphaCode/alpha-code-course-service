@@ -18,4 +18,5 @@ public interface CourseService {
     void delete(UUID id);
     CourseDto getNoneDeleteCourseById(UUID id);
     PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search);
+    PagedResult<CourseDto> getNoneDeleteCoursesByCategoryId(UUID id, int page, int size);
 }

@@ -22,10 +22,6 @@ public class UpdateLesson {
         @Size(max = 255, message = "Tiêu đề không được dài quá 255 ký tự")
         private String title;
 
-        @NotBlank(message = "Loại nội dung là bắt buộc")
-        @Size(max = 100, message = "ContentType không được dài quá 100 ký tự")
-        private String contentType;
-
         private String content; // text hoặc URL
 
         @NotNull(message = "Cờ requireRobot là bắt buộc")

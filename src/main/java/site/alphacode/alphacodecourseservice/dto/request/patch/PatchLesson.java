@@ -15,7 +15,6 @@ import java.util.UUID;
 @Builder
 public class PatchLesson {
     private String title;
-    private String contentType;
     private String content; // text hoặc URL
     private Boolean requireRobot;
     private JsonNode solution;

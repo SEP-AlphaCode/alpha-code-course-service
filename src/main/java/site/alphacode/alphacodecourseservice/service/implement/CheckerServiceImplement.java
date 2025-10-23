@@ -28,32 +28,38 @@ public class CheckerServiceImplement implements CheckerService {
     }
 
     public boolean autoCheck(Submission submission) {
-        JsonNode logData = submission.getLogData();
+        JsonNode logData = submission.getLogData(); // robot logs
 
-        if (logData == null) {
+        // Nếu log chưa có, chờ chấm tay
+        if (logData == null || !logData.has("logs")) {
             submission.setStatus(4); // WAITING_FOR_REVIEW
             return false;
         }
 
+        // Lấy solution (list các {type, code})
         JsonNode requiredActions = getLessonSolution(submission.getAccountLessonId());
         ArrayNode missingActions = objectMapper.createArrayNode();
 
+        // Duyệt từng hành động yêu cầu
         for (JsonNode required : requiredActions) {
             boolean found = false;
-            for (JsonNode performed : logData.get("actions")) {
-                if (required.get("action").asText().equals(performed.get("action").asText())
-                        && required.get("params").equals(performed.get("params"))) {
+
+            for (JsonNode performed : logData.get("logs")) {
+                if (performed.get("type").asText().equalsIgnoreCase(required.get("type").asText())
+                        && performed.get("code").asText().equalsIgnoreCase(required.get("code").asText())) {
                     found = true;
                     break;
                 }
             }
+
             if (!found) missingActions.add(required);
         }
 
-        if (missingActions.size() == 0) {
+        // Nếu đủ hành động thì PASS, ngược lại FAIL
+        if (missingActions.isEmpty()) {
             submission.setStatus(2); // PASSED
             submission.setMissingActions(null);
-            return true; // báo cho service biết là pass
+            return true;
         } else {
             submission.setStatus(3); // FAILED
             submission.setMissingActions(missingActions);

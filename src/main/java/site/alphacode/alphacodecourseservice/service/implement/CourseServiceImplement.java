@@ -94,6 +94,34 @@ public class CourseServiceImplement implements CourseService {
     }
 
     @Override
+    @Cacheable(value = "free_courses_list", key = "{#page, #size, #search, #categoryId}")
+    public PagedResult<CourseDto> getAllFreeActiveCourses(int page, int size, String search, UUID categoryId) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        Page<Course> course = courseRepository.findAllFreeActiveCourse(search, categoryId, pageable);
+        Page<CourseDto> dtoPage = course.map(c -> {
+            CourseDto dto = CourseMapper.toDto(c);
+            int sectionCount = (int) sectionRepository.countActiveByCourseId(c.getId());
+            dto.setSectionCount(sectionCount);
+            return dto;
+        });
+        return new PagedResult<>(dtoPage);
+    }
+
+    @Override
+    @Cacheable(value = "cost_courses_list", key = "{#page, #size, #search, #categoryId}")
+    public PagedResult<CourseDto> getAllCostActiveCourses(int page, int size, String search, UUID categoryId) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        Page<Course> course = courseRepository.findAllFreeActiveCourse(search, categoryId, pageable);
+        Page<CourseDto> dtoPage = course.map(c -> {
+            CourseDto dto = CourseMapper.toDto(c);
+            int sectionCount = (int) sectionRepository.countActiveByCourseId(c.getId());
+            dto.setSectionCount(sectionCount);
+            return dto;
+        });
+        return new PagedResult<>(dtoPage);
+    }
+
+    @Override
     @Cacheable(value = "all_courses_list", key = "{#page, #size, #search}")
     public PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
@@ -114,7 +142,9 @@ public class CourseServiceImplement implements CourseService {
             evict = {
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
-            @CacheEvict(value = "courses_list", allEntries = true)
+            @CacheEvict(value = "courses_list", allEntries = true),
+            @CacheEvict(value = "free_courses_list", allEntries = true),
+            @CacheEvict(value = "cost_courses_list", allEntries = true)
     })
     public CourseDto create(CreateCourse createCourse) {
         if (courseRepository.existsByName(createCourse.getName())) {
@@ -163,7 +193,9 @@ public class CourseServiceImplement implements CourseService {
     @Caching(evict = {
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
-            @CacheEvict(value = "courses_list", allEntries = true)
+            @CacheEvict(value = "courses_list", allEntries = true),
+            @CacheEvict(value = "free_courses_list", allEntries = true),
+            @CacheEvict(value = "cost_courses_list", allEntries = true)
     })
     public CourseDto update(UUID id, UpdateCourse updateCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
@@ -234,7 +266,9 @@ public class CourseServiceImplement implements CourseService {
     @Caching(evict = {
             @CacheEvict(value = "none_delete_course", allEntries = true),
             @CacheEvict(value = "all_courses_list", allEntries = true),
-            @CacheEvict(value = "courses_list", allEntries = true)
+            @CacheEvict(value = "courses_list", allEntries = true),
+            @CacheEvict(value = "free_courses_list", allEntries = true),
+            @CacheEvict(value = "cost_courses_list", allEntries = true)
     })
     public CourseDto patchUpdate(UUID id, PatchCourse patchCourse) {
         var existing = courseRepository.findNoneDeleteCourseById(id);
@@ -327,7 +361,9 @@ public class CourseServiceImplement implements CourseService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true),
             @CacheEvict(value = "lesson_by_slug", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true),
+            @CacheEvict(value = "free_courses_list", allEntries = true),
+            @CacheEvict(value = "cost_courses_list", allEntries = true)
     })
     public void delete(UUID id) {
         var existingOpt = courseRepository.findNoneDeleteCourseById(id);

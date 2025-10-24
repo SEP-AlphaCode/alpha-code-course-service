@@ -19,4 +19,6 @@ public interface CourseService {
     CourseDto getNoneDeleteCourseById(UUID id);
     PagedResult<CourseDto> getNoneDeleteCourses(int page, int size, String search);
     PagedResult<CourseDto> getNoneDeleteCoursesByCategoryId(UUID id, int page, int size);
+    PagedResult<CourseDto> getAllFreeActiveCourses(int page, int size, String search, UUID categoryId);
+    PagedResult<CourseDto> getAllCostActiveCourses(int page, int size, String search, UUID categoryId);
 }

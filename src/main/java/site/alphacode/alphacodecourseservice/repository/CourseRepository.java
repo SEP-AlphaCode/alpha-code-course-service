@@ -27,6 +27,36 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     @Query("""
        SELECT c FROM Course c
+       WHERE c.status = 1
+         AND (:categoryId IS NULL OR c.category.id = :categoryId)
+         AND (:searchTerm IS NULL OR :searchTerm = '' 
+              OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+              OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+         AND c.price = 0
+       ORDER BY c.createdDate DESC
+       """)
+    Page<Course> findAllFreeActiveCourse(
+            @Param("searchTerm") String searchTerm,@Param("categoryId") UUID categoryId,
+            Pageable pageable
+    );
+
+    @Query("""
+       SELECT c FROM Course c
+       WHERE c.status = 1
+         AND (:categoryId IS NULL OR c.category.id = :categoryId)
+         AND (:searchTerm IS NULL OR :searchTerm = '' 
+              OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+              OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+         AND c.price <> 0
+       ORDER BY c.createdDate DESC
+       """)
+    Page<Course> findAllCostActiveCourse(
+            @Param("searchTerm") String searchTerm,@Param("categoryId") UUID categoryId,
+            Pageable pageable
+    );
+
+    @Query("""
+       SELECT c FROM Course c
        WHERE c.status <> 0
          AND (:searchTerm IS NULL OR :searchTerm = '' 
               OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))

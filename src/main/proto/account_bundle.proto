@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package account_bundle;
+
+service AccountBundleService {
+  // Kiểm tra quyền sở hữu gói khóa học
+  rpc CheckOwnBundle(CheckOwnBundleRequest) returns (CheckOwnBundleResponse);
+}
+
+// --- Request / Response ---
+message CheckOwnBundleRequest {
+  string accountId = 1;
+  string bundleId = 2;
+}
+
+message CheckOwnBundleResponse {
+  bool owned = 1;
+}

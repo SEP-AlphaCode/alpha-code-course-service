@@ -21,7 +21,7 @@ public class AccountCourse {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "account_course_id", updatable = false, nullable = false, columnDefinition = "uuid")
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
     private UUID id;
 
     @Column(name = "account_id", nullable = false, columnDefinition = "uuid")

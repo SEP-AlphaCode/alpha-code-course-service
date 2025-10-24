@@ -111,7 +111,7 @@ public class CourseServiceImplement implements CourseService {
     @Cacheable(value = "cost_courses_list", key = "{#page, #size, #search, #categoryId}")
     public PagedResult<CourseDto> getAllCostActiveCourses(int page, int size, String search, UUID categoryId) {
         var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
-        Page<Course> course = courseRepository.findAllFreeActiveCourse(search, categoryId, pageable);
+        Page<Course> course = courseRepository.findAllCostActiveCourse(search, categoryId, pageable);
         Page<CourseDto> dtoPage = course.map(c -> {
             CourseDto dto = CourseMapper.toDto(c);
             int sectionCount = (int) sectionRepository.countActiveByCourseId(c.getId());

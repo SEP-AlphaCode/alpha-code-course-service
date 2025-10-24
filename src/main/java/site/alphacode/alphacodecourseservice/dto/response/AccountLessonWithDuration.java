@@ -21,8 +21,8 @@ public class AccountLessonWithDuration implements Serializable {
     private String slug;
     private Integer duration;
     private Integer status;
-    @JsonProperty(value = "typeStatus")
-    public String getTypeStatus() {
+    @JsonProperty(value = "statusText")
+    public String getStatusText() {
         return AccountLessonEnum.fromCode(this.getStatus());
     }
 }

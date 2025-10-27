@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountBundle;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
+import site.alphacode.alphacodecourseservice.service.AccountBundleService;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.UUID;
 @Slf4j
 public class BundleConsumer {
     private final AccountCourseService accountCourseService;
+    private final AccountBundleService accountBundleService;
 
     @RabbitListener(
             queues = "bundle.create.queue",
@@ -29,6 +32,10 @@ public class BundleConsumer {
 
         try {
             accountCourseService.createFromBundle(accountId, bundleId);
+            CreateAccountBundle createAccountBundle = new CreateAccountBundle();
+            createAccountBundle.setAccountId(accountId);
+            createAccountBundle.setBundleId(bundleId);
+            accountBundleService.create(createAccountBundle);
             log.info("Course purchase recorded successfully for accountId={}, bundleId={}", accountId, bundleId);
         } catch (ConflictException e) {
             // Bỏ qua nếu khóa học đã được mua trước đó

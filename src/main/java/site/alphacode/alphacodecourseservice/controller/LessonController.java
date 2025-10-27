@@ -103,7 +103,7 @@ public class LessonController {
     public PagedResult<LessonWithSolution> getAllLessons(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "") String search,
             @RequestParam(required = false) UUID courseId,
             @RequestParam(required = false) UUID sectionId,
             @RequestParam(required = false) Integer type,

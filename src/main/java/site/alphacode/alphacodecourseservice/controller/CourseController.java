@@ -34,19 +34,19 @@ public class CourseController {
 
     @GetMapping
     @Operation(summary = "Get all active courses with pagination and optional search filter")
-    public PagedResult<CourseDto> getAllActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search, @RequestParam(required = false) UUID categoryId) {
+    public PagedResult<CourseDto> getAllActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(defaultValue = "") String search, @RequestParam(required = false) UUID categoryId) {
         return courseService.getAllActiveCourses(page, size, search, categoryId);
     }
 
     @GetMapping("/free")
     @Operation(summary = "Get all free active courses with pagination and optional search filter")
-    public PagedResult<CourseDto> getAllFreeActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search, @RequestParam(required = false) UUID categoryId) {
+    public PagedResult<CourseDto> getAllFreeActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(defaultValue = "") String search, @RequestParam(required = false) UUID categoryId) {
         return courseService.getAllFreeActiveCourses(page, size, search, categoryId);
     }
 
     @GetMapping("/cost")
     @Operation(summary = "Get all cost active courses with pagination and optional search filter")
-    public PagedResult<CourseDto> getAllCostActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search, @RequestParam(required = false) UUID categoryId) {
+    public PagedResult<CourseDto> getAllCostActiveCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(defaultValue = "") String search, @RequestParam(required = false) UUID categoryId) {
         return courseService.getAllCostActiveCourses(page, size, search, categoryId);
     }
 
@@ -61,7 +61,7 @@ public class CourseController {
     @GetMapping("/none-delete")
     @Operation(summary = "Get all none delete courses with pagination and optional search filter")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public PagedResult<CourseDto> getAllNoneDeleteCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(required = false) String search) {
+    public PagedResult<CourseDto> getAllNoneDeleteCourses(@RequestParam(defaultValue = "1") int page,@RequestParam(defaultValue = "10") int size,@RequestParam(defaultValue = "") String search) {
         return courseService.getNoneDeleteCourses(page, size, search);
     }
 

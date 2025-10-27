@@ -49,9 +49,9 @@ public class CategoryController {
     @Operation(summary = "Get list of none-deleted categories with paging & search")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public PagedResult<CategoryDto> getAllNoneDeleteCategories(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String search
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "search", defaultValue = "") String search
     ) {
         return categoryService.getNoneDeleteCategories(page, size, search);
     }

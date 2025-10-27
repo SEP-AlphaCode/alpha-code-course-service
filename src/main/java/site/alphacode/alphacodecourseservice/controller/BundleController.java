@@ -69,7 +69,7 @@ public class BundleController {
     public PagedResult<BundleDto> getAllActiveBundles(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "search", required = false) String search) {
+            @RequestParam(value = "search", defaultValue = "") String search) {
         return bundleService.getAllActiveBundles(page, size, search);
     }
 
@@ -79,7 +79,7 @@ public class BundleController {
     public PagedResult<BundleDto> getNoneDeleteBundles(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "search", required = false) String search) {
+            @RequestParam(value = "search", defaultValue = "") String search) {
         return bundleService.getNoneDeleteBundles(page, size, search);
     }
 }

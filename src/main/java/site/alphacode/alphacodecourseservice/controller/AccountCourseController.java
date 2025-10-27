@@ -37,7 +37,7 @@ public class AccountCourseController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create new account course")
-    @PreAuthorize("hasAuthority('ROLE_User')")
+    @PreAuthorize("hasAuthority('ROLE_Parent')")
     public AccountCourseDto createAccountCourse(@RequestBody CreateAccountCourse createAccountCourse) {
         return accountCourseService.create(createAccountCourse);
     }

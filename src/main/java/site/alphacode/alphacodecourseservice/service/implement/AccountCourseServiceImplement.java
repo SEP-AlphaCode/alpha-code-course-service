@@ -21,6 +21,7 @@ import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseBundleRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
+import site.alphacode.alphacodecourseservice.service.CourseService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     private final AccountCourseRepository repository;
     private final LessonRepository lessonRepository;
     private final CourseBundleRepository courseBundleRepository;
+    private final CourseService courseService;
 
     @Override
     @Transactional
@@ -54,6 +56,13 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
             throw new ConflictException("Khóa học đã được mua trước đó");
         }
+
+        var course = courseService.getNoneDeleteCourseById(createAccountCourse.getCourseId());
+        if(course.getPrice() > 0) {
+            throw new ConflictException("Khóa học trả phí không thể được tạo tự động");
+
+        }
+
         AccountCourse accountCourse = new AccountCourse();
         accountCourse.setAccountId(createAccountCourse.getAccountId());
         accountCourse.setCourseId(createAccountCourse.getCourseId());

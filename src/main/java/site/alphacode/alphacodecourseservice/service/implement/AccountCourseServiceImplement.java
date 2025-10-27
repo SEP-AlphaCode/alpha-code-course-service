@@ -49,7 +49,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Override
     @Transactional
     @CachePut(value = "account_course", key = "{#result.id}")
-    @CacheEvict(value = "account_courses", allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
     public AccountCourseDto create(CreateAccountCourse createAccountCourse) {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
             throw new ConflictException("Khóa học đã được mua trước đó");
@@ -79,7 +79,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "account_course", key = "{#id}")
+    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
@@ -88,7 +88,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "account_courses", allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
     public List<AccountCourseDto> createFromBundle(UUID accountId, UUID bundleId) {
         // Giả sử bạn có repository CourseBundleRepository để lấy danh sách course trong bundle
         List<UUID> courseIdsInBundle = courseBundleRepository.findCourseIdsByBundleId(bundleId);

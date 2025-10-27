@@ -21,7 +21,7 @@ public class PatchCourse {
 
     private String description;
 
-    @Min(value = 1, message = "Số tiền phải lớn hơn 0")
+    @Min(value = 0, message = "Số tiền phải lớn hơn hoặc bằng 0")
     private Integer price;
 
     private Boolean requireLicense;

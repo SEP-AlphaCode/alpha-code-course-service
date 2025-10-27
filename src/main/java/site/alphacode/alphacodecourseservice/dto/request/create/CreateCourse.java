@@ -23,7 +23,7 @@ public class CreateCourse {
     private String description;
 
     @NotNull(message = "Giá khóa học là bắt buộc")
-    @Min(value = 1, message = "Số tiền phải lớn hơn 0")
+    @Min(value = 0, message = "Số tiền phải lớn hơn hoặc bằng 0")
     private Integer price;
 
     @NotNull(message = "Trạng thái yêu cầu giấy phép là bắt buộc")

@@ -36,7 +36,7 @@ public class CourseConsumer {
         createAccountCourse.setCourseId(UUID.fromString(courseId));
 
         try {
-            accountCourseService.create(createAccountCourse);
+            accountCourseService.createFromPayment(createAccountCourse);
             log.info("Course purchase recorded successfully for accountId={}, courseId={}", accountId, courseId);
         } catch (ConflictException e) {
             // Bỏ qua nếu khóa học đã được mua trước đó

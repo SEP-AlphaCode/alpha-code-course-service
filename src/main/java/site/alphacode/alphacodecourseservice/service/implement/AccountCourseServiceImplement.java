@@ -79,6 +79,30 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     }
 
     @Override
+    @Transactional
+    @CachePut(value = "account_course", key = "{#result.id}")
+    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    public AccountCourseDto createFromPayment(CreateAccountCourse createAccountCourse) {
+        if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
+            throw new ConflictException("Khóa học đã được mua trước đó");
+        }
+
+        AccountCourse accountCourse = new AccountCourse();
+        accountCourse.setAccountId(createAccountCourse.getAccountId());
+        accountCourse.setCourseId(createAccountCourse.getCourseId());
+        accountCourse.setStatus(1);
+        accountCourse.setPurchaseDate(LocalDateTime.now());
+        accountCourse.setLastAccessed(null);
+        accountCourse.setCompletedLesson(0);
+        accountCourse.setCompleted(false);
+        accountCourse.setProgressPercent(0);
+        accountCourse.setTotalLesson(lessonRepository.countActiveLessonsByCourseId(createAccountCourse.getCourseId()));
+
+        accountCourse = repository.save(accountCourse);
+        return AccountCourseMapper.toDto(accountCourse);
+    }
+
+    @Override
     @Cacheable(value = "account_courses", key = "{#accountId, #page, #size}")
     public PagedResult<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);

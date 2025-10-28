@@ -13,4 +13,5 @@ public interface AccountCourseService {
     void delete(UUID id);
     PagedResult<AccountCourseDto> getAccountCoursesByAccountId(UUID accountId, int page, int size);
     List<AccountCourseDto> createFromBundle(UUID accountId, UUID bundleId);
+    AccountCourseDto createFromPayment(CreateAccountCourse createAccountCourse);
 }

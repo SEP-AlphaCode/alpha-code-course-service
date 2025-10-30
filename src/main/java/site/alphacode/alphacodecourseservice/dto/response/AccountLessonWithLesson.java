@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class AccountLessonWithLesson {
+public class AccountLessonWithLesson implements Serializable {
     private UUID id;
     private Integer status;
     private LocalDateTime completedAt;

@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,5 +38,5 @@ public class Section extends BaseEntity {
     private Course course;
 
     @OneToMany(mappedBy = "section", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Lesson> lessons;
+    private List<Lesson> lessons;
 }

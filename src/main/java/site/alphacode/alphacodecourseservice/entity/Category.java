@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,5 +39,5 @@ public class Category extends BaseEntity {
     private String slug;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<Course> courses;
+    private List<Course> courses;
 }

@@ -4,10 +4,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Data
-public class SectionOrderDto {
+public class SectionOrderDto implements Serializable {
     @NotNull
     private UUID id;
 

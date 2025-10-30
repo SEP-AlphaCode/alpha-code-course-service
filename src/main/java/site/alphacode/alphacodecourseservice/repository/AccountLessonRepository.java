@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration;
 import site.alphacode.alphacodecourseservice.entity.AccountLesson;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AccountLessonRepository extends JpaRepository<AccountLesson, UUID> {
@@ -27,4 +29,9 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
             @Param("accountId") UUID accountId,
             Pageable pageable
     );
+
+    @Query("SELECT al FROM AccountLesson al JOIN al.lesson l JOIN l.section s WHERE al.accountId = :accountId AND s.course.id = :courseId")
+    List<AccountLesson> findAllByAccountIdAndCourseId(@Param("accountId") UUID accountId, @Param("courseId") UUID courseId);
+
+    Optional<AccountLesson> findByAccountIdAndLessonId(UUID accountId, UUID lessonId);
 }

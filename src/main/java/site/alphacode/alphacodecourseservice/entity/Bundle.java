@@ -10,6 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +43,6 @@ public class Bundle extends BaseEntity {
     private String coverImage;
 
 
-    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<CourseBundle> courseBundles;
+    @OneToMany(mappedBy = "bundle", fetch = FetchType.LAZY)
+    private List<CourseBundle> courseBundles;
 }

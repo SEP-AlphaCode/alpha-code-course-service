@@ -10,6 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -56,11 +57,11 @@ public class Course extends BaseEntity {
     @Column(name = "category_id", nullable = false, columnDefinition = "uuid")
     private UUID categoryId;
 
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<CourseBundle> courseBundles;
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private List<CourseBundle> courseBundles;
 
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Section> sections;
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private List<Section> sections;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum AccountLessonEnum {
+    NOT_STARTED(0, "CHƯA BẮT ĐẦU"),
     IN_PROGRESS(1, "ĐANG TIẾN HÀNH"),
     COMPLETED(2, "HOÀN THÀNH"),;
     private final int code;

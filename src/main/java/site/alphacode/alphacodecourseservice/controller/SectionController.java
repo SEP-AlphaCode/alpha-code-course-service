@@ -10,6 +10,7 @@ import site.alphacode.alphacodecourseservice.dto.request.ReorderSectionsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSection;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateSection;
 import site.alphacode.alphacodecourseservice.dto.response.SectionDto;
+import site.alphacode.alphacodecourseservice.dto.response.SectionWithAccountLesson;
 import site.alphacode.alphacodecourseservice.service.SectionService;
 
 import java.util.List;
@@ -56,6 +57,15 @@ public class SectionController {
             @PathVariable UUID courseId
     ) {
         return sectionService.getAllByCourseId(courseId);
+    }
+
+    @GetMapping("/with-account-lessons")
+    @Operation(summary = "Get all sections with account lessons by course id and account id")
+    public List<SectionWithAccountLesson> getSectionsWithAccountLessons(
+            @RequestParam UUID courseId,
+            @RequestParam UUID accountId
+    ) {
+        return sectionService.getAllSectionWithAccountLesson(courseId, accountId);
     }
 
     @PutMapping("/{courseId}/sections/reorder")

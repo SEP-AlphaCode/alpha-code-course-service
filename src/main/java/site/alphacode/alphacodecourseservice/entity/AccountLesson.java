@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,6 +43,6 @@ public class AccountLesson {
     @JoinColumn(name = "lesson_id", insertable = false, updatable = false)
     private Lesson lesson;
 
-    @OneToMany(mappedBy = "accountLesson", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Submission> submissions;
+    @OneToMany(mappedBy = "accountLesson", fetch = FetchType.LAZY)
+    private List<Submission> submissions;
 }

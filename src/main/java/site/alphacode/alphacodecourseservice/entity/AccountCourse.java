@@ -52,6 +52,6 @@ public class AccountCourse {
     private LocalDateTime lastAccessed;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", insertable = false, updatable = false)
+    @JoinColumn(name = "course_id", nullable = false, insertable = false, updatable = false)
     private Course course;
 }

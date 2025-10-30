@@ -40,8 +40,8 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
             "WHERE a.accountId = :accountId AND a.courseId = :courseId AND a.status = 1")
     boolean existsByAccountIdAndCourseId(UUID accountId, UUID courseId);
 
-    @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = : accountId AND ac.courseId = : courseId AND ac.status = 1")
-    Optional<AccountCourse> findByAccountIdAndCourseId(@Param("accountId") UUID accountId,@Param("courseId") UUID courseId);
+    @Query("SELECT ac FROM AccountCourse ac WHERE ac.accountId = :accountId AND ac.courseId = :courseId AND ac.status = 1")
+    Optional<AccountCourse> findByAccountIdAndCourseId(@Param("accountId") UUID accountId, @Param("courseId") UUID courseId);
 
     @Query("SELECT ac.courseId FROM AccountCourse ac " +
             "WHERE ac.accountId = :accountId AND ac.courseId IN :courseIds AND ac.status = 1")

@@ -3,12 +3,13 @@ package site.alphacode.alphacodecourseservice.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+
+import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PresignResponse {
+public class PresignResponse implements Serializable {
     private String key;
     private String uploadUrl;
     private String publicUrl;

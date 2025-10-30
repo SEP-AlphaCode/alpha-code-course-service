@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.Lesson;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,8 +32,10 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     Optional<Lesson> findById(@Param("id") UUID id);
 
     // Lấy lesson active theo id
-    @Query("SELECT l FROM Lesson l join l.section WHERE l.id = :id AND l.status = 1")
-    Optional<Lesson> findActiveById(@Param("id") UUID id);
+    @Query("SELECT l FROM Lesson l " +
+            "JOIN FETCH l.section s " +
+            "WHERE l.id = :lessonId AND l.status = 1")
+    Optional<Lesson> findActiveWithSectionById(@Param("lessonId") UUID lessonId);
 
     // Lấy lesson theo slug
     @Query("SELECT l FROM Lesson l WHERE l.slug = :slug AND l.status <> 0")
@@ -86,6 +89,9 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
 
     @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status <> 0 ORDER BY l.orderNumber ASC")
     java.util.List<Lesson> findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(@Param("sectionId") UUID sectionId);
+
+    @Query("SELECT l FROM Lesson l WHERE l.sectionId = :sectionId AND l.status = 1 ORDER BY l.orderNumber ASC")
+    java.util.List<Lesson> findAllBySectionIdOrderByOrderNumberAsc(@Param("sectionId") UUID sectionId);
 
     // Tính tổng duration của tất cả lesson thuộc course
     @Query("SELECT SUM(l.duration) FROM Lesson l WHERE l.section.course.id = :courseId")

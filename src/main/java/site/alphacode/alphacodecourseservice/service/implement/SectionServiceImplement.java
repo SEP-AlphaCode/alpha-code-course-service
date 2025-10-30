@@ -10,22 +10,26 @@ import org.springframework.stereotype.Service;
 import site.alphacode.alphacodecourseservice.dto.request.ReorderSectionsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSection;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateSection;
+import site.alphacode.alphacodecourseservice.dto.response.AccountLessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.SectionDto;
+import site.alphacode.alphacodecourseservice.dto.response.SectionWithAccountLesson;
+import site.alphacode.alphacodecourseservice.entity.AccountLesson;
 import site.alphacode.alphacodecourseservice.entity.Course;
+import site.alphacode.alphacodecourseservice.entity.Lesson;
 import site.alphacode.alphacodecourseservice.entity.Section;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.LessonMapper;
 import site.alphacode.alphacodecourseservice.mapper.SectionMapper;
+import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.SectionService;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class SectionServiceImplement implements SectionService {
     // Inject lesson repository to fetch lessons for sections
     private final LessonRepository lessonRepository;
     private final org.springframework.cache.CacheManager cacheManager;
+    private final AccountLessonRepository accountLessonRepository;
 
     @Override
     @Cacheable(value = "section", key = "#id")
@@ -73,6 +78,65 @@ public class SectionServiceImplement implements SectionService {
                 .toList();
     }
 
+    @Override
+    public List<SectionWithAccountLesson> getAllSectionWithAccountLesson(UUID courseId, UUID accountId) {
+        // Kiểm tra course tồn tại
+        courseRepository.findNoneDeleteCourseById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course với id " + courseId + " không tồn tại."));
+
+        // Lấy tất cả sections của course
+        List<Section> sections = sectionRepository.findAllByCourseId(courseId);
+
+        // Gán lessons cho từng section, giữ thứ tự
+        sections.forEach(section -> {
+            List<Lesson> lessons = lessonRepository.findAllBySectionIdOrderByOrderNumberAsc(section.getId());
+            if (lessons == null) {
+                lessons = new ArrayList<>();
+            }
+            // Dùng LinkedHashSet để giữ thứ tự
+            section.setLessons(lessons);
+        });
+
+        // Lấy tất cả AccountLesson của account và course
+        List<AccountLesson> accountLessons = accountLessonRepository.findAllByAccountIdAndCourseId(accountId, courseId);
+
+        // Chuyển sang Map để truy xuất nhanh theo lessonId
+        Map<UUID, AccountLesson> accountLessonMap = accountLessons.stream()
+                .collect(Collectors.toMap(a -> a.getLesson().getId(), a -> a));
+
+        // Map từng section sang SectionWithAccountLesson
+        return (List<SectionWithAccountLesson>) sections.stream().map(section -> {
+            // Copy ra List để xử lý, tránh sửa trực tiếp Set gốc
+            List<Lesson> lessonList = new ArrayList<>(section.getLessons());
+
+            // Map từng lesson sang AccountLessonDto
+            List<AccountLessonDto> accountLessonDtos = (List<AccountLessonDto>) lessonList.stream()
+                    .map(lesson -> {
+                        AccountLesson accLesson = accountLessonMap.get(lesson.getId());
+                        return AccountLessonDto.builder()
+                                .id(accLesson != null ? accLesson.getId() : null)
+                                .accountId(accountId)
+                                .lessonId(lesson.getId())
+                                .status(accLesson != null ? accLesson.getStatus() : 0)
+                                .completedAt(accLesson != null ? accLesson.getCompletedAt() : null)
+                                .lesson(LessonMapper.toDto(lesson))
+                                .build();
+                    })
+                    .toList();
+
+
+            // Build SectionWithAccountLesson
+            return SectionWithAccountLesson.builder()
+                    .id(section.getId())
+                    .title(section.getTitle())
+                    .orderNumber(section.getOrderNumber())
+                    .courseId(section.getCourseId())
+                    .accountLessons(accountLessonDtos)
+                    .status(section.getStatus())
+                    .build();
+        }).toList();
+    }
+
 
 
     @Override
@@ -83,14 +147,17 @@ public class SectionServiceImplement implements SectionService {
     })
     public SectionDto create(CreateSection createSection) {
         Course course = courseRepository.findById(createSection.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Course với id " + createSection.getCourseId() + " không tồn tại."));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Course với id " + createSection.getCourseId() + " không tồn tại."));
 
         sectionRepository.findByTitleAndCourseId(createSection.getTitle(), createSection.getCourseId())
-                .ifPresent(s -> { throw new ConflictException("Section title đã tồn tại trong course này."); });
+                .ifPresent(s -> {
+                    throw new ConflictException("Section title đã tồn tại trong course này.");
+                });
 
         // Lấy orderNumber lớn nhất trong course
         Integer maxOrder = sectionRepository.findMaxOrderNumberByCourseId(createSection.getCourseId());
-        int newOrderNumber = (maxOrder == null) ? 1 : maxOrder + 1;  // Nếu chưa có section nào -> 1
+        int newOrderNumber = (maxOrder == null) ? 1 : maxOrder + 1; // Nếu chưa có section nào -> 1
 
         Section section = Section.builder()
                 .title(createSection.getTitle())
@@ -125,7 +192,9 @@ public class SectionServiceImplement implements SectionService {
 
         if (!existing.getTitle().equals(updateSection.getTitle())) {
             sectionRepository.findByTitleAndCourseId(updateSection.getTitle(), existing.getCourseId())
-                    .ifPresent(s -> { throw new ConflictException("Section title đã tồn tại trong course này."); });
+                    .ifPresent(s -> {
+                        throw new ConflictException("Section title đã tồn tại trong course này.");
+                    });
         }
 
         existing.setTitle(updateSection.getTitle());
@@ -169,7 +238,8 @@ public class SectionServiceImplement implements SectionService {
         // Delete the section
         sectionRepository.delete(existing);
 
-        // Shift down orderNumber for sections in the same course that were after the deleted section
+        // Shift down orderNumber for sections in the same course that were after the
+        // deleted section
         var sectionsInCourse = sectionRepository.findAllByCourseId(courseId);
         var sectionsToUpdate = sectionsInCourse.stream()
                 .filter(s -> s.getOrderNumber() > deletedOrder)
@@ -204,9 +274,10 @@ public class SectionServiceImplement implements SectionService {
             @CacheEvict(value = "section", allEntries = true),
             @CacheEvict(value = "sections_list", allEntries = true)
     })
-    public void reorder(UUID courseId ,ReorderSectionsRequest request) {
+    public void reorder(UUID courseId, ReorderSectionsRequest request) {
         var items = request.getSections();
-        if (items == null || items.isEmpty()) return;
+        if (items == null || items.isEmpty())
+            return;
 
         // Build maps and validate duplicates
         var idToOrder = new java.util.HashMap<UUID, Integer>();
@@ -250,6 +321,5 @@ public class SectionServiceImplement implements SectionService {
             courseRepository.save(c);
         });
     }
-
 
 }

@@ -31,7 +31,7 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     Optional<Lesson> findById(@Param("id") UUID id);
 
     // Lấy lesson active theo id
-    @Query("SELECT l FROM Lesson l WHERE l.id = :id AND l.status = 1")
+    @Query("SELECT l FROM Lesson l join l.section WHERE l.id = :id AND l.status = 1")
     Optional<Lesson> findActiveById(@Param("id") UUID id);
 
     // Lấy lesson theo slug

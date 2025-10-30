@@ -24,6 +24,7 @@ import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CertificateRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
+import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 import site.alphacode.alphacodecourseservice.service.AccountLessonService;
 
 import java.time.LocalDateTime;
@@ -38,6 +39,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       private final AccountCourseRepository accountCourseRepository;
       private final LessonRepository lessonRepository;
       private final CertificateRepository certificateRepository;
+    private final AccountCourseService accountCourseService;
 
     @Override
     @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
@@ -73,6 +75,13 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       public AccountLessonWithLesson create(CreateAccountLesson createAccountLesson){
             var lesson = lessonRepository.findActiveById(createAccountLesson.getLessonId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài học: " + createAccountLesson.getLessonId()));
+
+            var accountCourse = accountCourseRepository.findByAccountIdAndCourseId(createAccountLesson.getAccountId(), lesson.getSection().getCourseId());
+
+            if(accountCourse.isEmpty()){
+                    throw new ResourceNotFoundException("Tài khoản chưa đăng ký khóa học chứa bài học này.");
+            }
+            
             AccountLesson accountLesson = new AccountLesson();
             accountLesson.setAccountId(createAccountLesson.getAccountId());
             accountLesson.setLessonId(createAccountLesson.getLessonId());

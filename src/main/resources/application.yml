@@ -36,6 +36,7 @@ spring:
     multipart:
       max-file-size: 500MB
       max-request-size: 500MB
+      file-size-threshold: 2MB
   rabbitmq:
     host: ${SPRING_RABBITMQ_HOST:localhost}
     port: ${SPRING_RABBITMQ_PORT:5672}
@@ -63,3 +64,7 @@ grpc:
 
 server:
   forward-headers-strategy: native
+  tomcat:
+    max-swallow-size: -1          # allow large request bodies without aborting
+    max-http-form-post-size: -1   # remove form post size limit
+    connection-timeout: 10000     # 10s for slow networks

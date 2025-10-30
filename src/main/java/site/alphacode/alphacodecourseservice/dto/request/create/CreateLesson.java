@@ -1,7 +1,6 @@
 package site.alphacode.alphacodecourseservice.dto.request.create;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,8 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -41,4 +38,6 @@ public class CreateLesson {
     private Integer type;
 
     private JsonNode solution;
+
+    private String videoUrl; // optional: FE direct upload URL
 }

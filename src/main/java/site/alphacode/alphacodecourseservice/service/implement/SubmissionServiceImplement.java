@@ -59,8 +59,9 @@ public class SubmissionServiceImplement implements SubmissionService {
         if (request.getVideoFile() != null && !request.getVideoFile().isEmpty()) {
             try {
                 String fileKey = "submissions/" + System.currentTimeMillis() + "_" +  request.getVideoFile().getOriginalFilename();
-                videoUrl = s3Service.uploadBytes(
-                        request.getVideoFile().getBytes(),
+                videoUrl = s3Service.uploadStream(
+                        request.getVideoFile().getInputStream(),
+                        request.getVideoFile().getSize(),
                         fileKey,
                         request.getVideoFile().getContentType()
                 );

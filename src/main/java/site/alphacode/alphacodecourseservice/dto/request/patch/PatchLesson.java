@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -23,4 +22,6 @@ public class PatchLesson {
     private Integer duration;
     private Integer type;
     private UUID sectionId;
+
+    private String videoUrl; // optional: FE direct upload URL
 }

@@ -1,6 +1,5 @@
 package site.alphacode.alphacodecourseservice.service;
 
-import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
@@ -21,10 +20,10 @@ public interface LessonService {
     LessonDto getLessonBySlug(String slug);
     LessonWithSolution getLessonWithSolutionBySlug(String slug);
 
-    // Thao tác CRUD
-    LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile);
-    LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile);
-    LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson, MultipartFile videoFile);
+    // Thao tác CRUD (JSON only; FE uploads video separately and passes videoUrl)
+    LessonWithSolution create(CreateLesson createLesson);
+    LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson);
+    LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson);
     void delete(UUID lessonId);
 
     // Lấy Lesson theo Section

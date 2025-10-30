@@ -3,19 +3,21 @@ package site.alphacode.alphacodecourseservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
-import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateLesson;
+import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
 import site.alphacode.alphacodecourseservice.dto.response.LessonDto;
 import site.alphacode.alphacodecourseservice.dto.response.LessonWithSolution;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.PresignResponse;
 import site.alphacode.alphacodecourseservice.service.LessonService;
+import site.alphacode.alphacodecourseservice.service.S3Service;
 
 import java.util.UUID;
 
@@ -26,6 +28,22 @@ import java.util.UUID;
 public class LessonController {
 
     private final LessonService lessonService;
+    private final S3Service s3Service;
+
+    @GetMapping("/presign")
+    @Operation(summary = "Generate S3 presigned PUT URL for direct upload (Admin and Staff only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
+    public PresignResponse presign(
+            @RequestParam @NotBlank String filename,
+            @RequestParam(defaultValue = "video/mp4") String contentType,
+            @RequestParam(defaultValue = "lessons") String folder,
+            @RequestParam(defaultValue = "900") long expiresInSeconds
+    ) {
+        String key = folder + "/" + System.currentTimeMillis() + "_" + filename;
+        String uploadUrl = s3Service.generatePresignedPutUrl(key, contentType, expiresInSeconds);
+        String publicUrl = s3Service.buildPublicUrl(key);
+        return new PresignResponse(key, uploadUrl, publicUrl, expiresInSeconds);
+    }
 
     // ------------------- GET -------------------
 
@@ -114,40 +132,37 @@ public class LessonController {
 
     // ------------------- CREATE -------------------
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution create(
-            @Valid @RequestPart("createLesson")  CreateLesson createLesson,
-            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+            @Valid @RequestBody CreateLesson createLesson
     ) {
-        return lessonService.create(createLesson, videoFile);
+        return lessonService.create(createLesson);
     }
 
     // ------------------- UPDATE -------------------
 
     // ------------------- UPDATE -------------------
-    @PutMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{lessonId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution update(
             @PathVariable UUID lessonId,
-            @Valid @RequestPart("updateLesson") UpdateLesson updateLesson,
-            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+            @Valid @RequestBody UpdateLesson updateLesson
     ) {
-        return lessonService.update(lessonId, updateLesson, videoFile);
+        return lessonService.update(lessonId, updateLesson);
     }
 
     // ------------------- PATCH -------------------
-    @PatchMapping(value = "/{lessonId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{lessonId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Patch a lesson (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
     public LessonWithSolution patch(
             @PathVariable UUID lessonId,
-            @Valid @RequestPart("patchLesson") PatchLesson patchLesson,
-            @RequestPart(value = "videoFile", required = false) MultipartFile videoFile
+            @Valid @RequestBody PatchLesson patchLesson
     ) {
-        return lessonService.patch(lessonId, patchLesson, videoFile);
+        return lessonService.patch(lessonId, patchLesson);
     }
 
 

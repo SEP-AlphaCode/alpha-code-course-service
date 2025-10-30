@@ -12,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import site.alphacode.alphacodecourseservice.dto.request.ReorderLessonsRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateLesson;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchLesson;
@@ -30,10 +29,8 @@ import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
 import site.alphacode.alphacodecourseservice.service.LessonService;
-import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,7 +42,7 @@ public class LessonServiceImplement implements LessonService {
     private final LessonRepository lessonRepository;
     private final SectionRepository sectionRepository;
     private final CourseRepository courseRepository;
-    private final S3Service s3Service;
+    // S3 uploads are now done on FE via presigned URLs
     private final CacheManager cacheManager;
 
     // ==================== GET ====================
@@ -114,7 +111,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson_by_slug", allEntries = true),
             @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
-    public LessonWithSolution create(CreateLesson createLesson, MultipartFile videoFile) {
+    public LessonWithSolution create(CreateLesson createLesson) {
         lessonRepository.findByTitleAndSectionId(createLesson.getTitle(), createLesson.getSectionId())
                 .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
 
@@ -125,15 +122,7 @@ public class LessonServiceImplement implements LessonService {
 
         int maxOrder = lessonRepository.findMaxOrderNumberBySectionId(createLesson.getSectionId()).orElse(0);
 
-        String videoUrl = null;
-        if (videoFile != null && !videoFile.isEmpty()) {
-            try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
-                videoUrl = s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType());
-            } catch (IOException e) {
-                throw new RuntimeException("Upload video thất bại", e);
-            }
-        }
+        String videoUrl = createLesson.getVideoUrl();
 
         Lesson lesson = Lesson.builder()
                 .title(createLesson.getTitle())
@@ -190,7 +179,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson_by_slug", allEntries = true),
             @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
-    public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson, MultipartFile videoFile) {
+    public LessonWithSolution update(UUID lessonId, UpdateLesson updateLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
@@ -203,15 +192,7 @@ public class LessonServiceImplement implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + updateLesson.getSectionId() + " không tồn tại."));
         Course course = section.getCourse();
 
-        String videoUrl = existing.getVideoUrl();
-        if (videoFile != null && !videoFile.isEmpty()) {
-            try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
-                videoUrl = s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType());
-            } catch (IOException e) {
-                throw new RuntimeException("Upload video thất bại", e);
-            }
-        }
+        String videoUrl = updateLesson.getVideoUrl() != null ? updateLesson.getVideoUrl() : existing.getVideoUrl();
 
         if (!Objects.equals(existing.getDuration(), updateLesson.getDuration())) {
             course.setTotalDuration(course.getTotalDuration() - existing.getDuration() + updateLesson.getDuration());
@@ -266,7 +247,7 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lesson_by_slug", allEntries = true),
             @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
     })
-    public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson, MultipartFile videoFile) {
+    public LessonWithSolution patch(UUID lessonId, PatchLesson patchLesson) {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
@@ -283,13 +264,8 @@ public class LessonServiceImplement implements LessonService {
             existing.setSlug(SlugHelper.toSlug(patchLesson.getTitle()));
         }
 
-        if (videoFile != null && !videoFile.isEmpty()) {
-            try {
-                String fileKey = "lessons/" + System.currentTimeMillis() + "_" + videoFile.getOriginalFilename();
-                existing.setVideoUrl(s3Service.uploadBytes(videoFile.getBytes(), fileKey, videoFile.getContentType()));
-            } catch (IOException e) {
-                throw new RuntimeException("Upload video thất bại", e);
-            }
+        if (patchLesson.getVideoUrl() != null) {
+            existing.setVideoUrl(patchLesson.getVideoUrl());
         }
 
         if (patchLesson.getContent() != null) existing.setContent(patchLesson.getContent());

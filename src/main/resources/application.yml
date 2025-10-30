@@ -68,3 +68,14 @@ server:
     max-swallow-size: -1          # allow large request bodies without aborting
     max-http-form-post-size: -1   # remove form post size limit
     connection-timeout: 10000     # 10s for slow networks
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY}
+    region:
+      static: ${CLOUD_AWS_REGION_STATIC:ap-southeast-1}
+    s3:
+      bucket: ${APPLICATION_BUCKET_NAME:alpha-course-bucket}
+

@@ -39,10 +39,7 @@ public class LessonController {
             @RequestParam(defaultValue = "lessons") String folder,
             @RequestParam(defaultValue = "900") long expiresInSeconds
     ) {
-        String key = folder + "/" + System.currentTimeMillis() + "_" + filename;
-        String uploadUrl = s3Service.generatePresignedPutUrl(key, contentType, expiresInSeconds);
-        String publicUrl = s3Service.buildPublicUrl(key);
-        return new PresignResponse(key, uploadUrl, publicUrl, expiresInSeconds);
+        return s3Service.generatePresignUrl(filename, contentType, folder, expiresInSeconds);
     }
 
     // ------------------- GET -------------------

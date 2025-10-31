@@ -118,6 +118,9 @@ public class LessonServiceImplement implements LessonService {
         Section section = sectionRepository.findById(createLesson.getSectionId())
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + createLesson.getSectionId() + " không tồn tại."));
 
+        String slug = SlugHelper.toSlug(createLesson.getTitle());
+        lessonRepository.findBySlug(slug).ifPresent(l -> { throw new ConflictException("Bài học với tên này đã tồn tại."); });
+
         Course course = section.getCourse();
 
         int maxOrder = lessonRepository.findMaxOrderNumberBySectionId(createLesson.getSectionId()).orElse(0);
@@ -137,7 +140,7 @@ public class LessonServiceImplement implements LessonService {
                 .sectionId(createLesson.getSectionId())
                 .createdDate(LocalDateTime.now())
                 .lastUpdated(null)
-                .slug(SlugHelper.toSlug(createLesson.getTitle()))
+                .slug(slug)
                 .build();
 
         Lesson saved = lessonRepository.save(lesson);
@@ -183,9 +186,14 @@ public class LessonServiceImplement implements LessonService {
         Lesson existing = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học với id " + lessonId + " không tồn tại."));
 
+        String slug = SlugHelper.toSlug(updateLesson.getTitle());
+
         if (!existing.getTitle().equals(updateLesson.getTitle())) {
             lessonRepository.findByTitleAndSectionId(updateLesson.getTitle(), updateLesson.getSectionId())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
+
+
+            lessonRepository.findBySlug(slug).ifPresent(l -> { throw new ConflictException("Bài học với tên này đã tồn tại."); });
         }
 
         Section section = sectionRepository.findById(updateLesson.getSectionId())
@@ -209,7 +217,7 @@ public class LessonServiceImplement implements LessonService {
         existing.setOrderNumber(updateLesson.getOrderNumber());
         existing.setLastUpdated(LocalDateTime.now());
         existing.setSectionId(updateLesson.getSectionId());
-        existing.setSlug(SlugHelper.toSlug(updateLesson.getTitle()));
+        existing.setSlug(slug);
 
         Lesson saved = lessonRepository.save(existing);
 
@@ -261,7 +269,10 @@ public class LessonServiceImplement implements LessonService {
             lessonRepository.findByTitleAndSectionId(patchLesson.getTitle(), patchLesson.getSectionId())
                     .ifPresent(l -> { throw new ConflictException("Tiêu đề bài học đã tồn tại."); });
             existing.setTitle(patchLesson.getTitle());
-            existing.setSlug(SlugHelper.toSlug(patchLesson.getTitle()));
+            String slug = SlugHelper.toSlug(patchLesson.getTitle());
+            lessonRepository.findBySlug(slug).ifPresent(l -> { throw new ConflictException("Bài học với tên này đã tồn tại."); });
+
+            existing.setSlug(slug);
         }
 
         if (patchLesson.getVideoUrl() != null) {

@@ -1,5 +1,7 @@
 package site.alphacode.alphacodecourseservice.service;
 
+import site.alphacode.alphacodecourseservice.dto.response.PresignResponse;
+
 import java.io.InputStream;
 
 public interface S3Service {
@@ -10,5 +12,7 @@ public interface S3Service {
     String generatePresignedPutUrl(String key, String contentType, long expiresSeconds);
 
     String buildPublicUrl(String key);
+
+    PresignResponse generatePresignUrl(String filename, String contentType, String folder, long expiresInSeconds);
 }
 

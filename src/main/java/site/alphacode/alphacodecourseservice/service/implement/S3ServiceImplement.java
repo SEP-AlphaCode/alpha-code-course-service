@@ -1,8 +1,11 @@
 package site.alphacode.alphacodecourseservice.service.implement;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
+import site.alphacode.alphacodecourseservice.dto.response.PresignResponse;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -86,6 +89,14 @@ public class S3ServiceImplement implements S3Service {
                 bucketName,
                 key
         );
+    }
+
+    @Override
+    public PresignResponse generatePresignUrl(String filename, String contentType, String folder, long expiresInSeconds){
+        String key = folder + "/" + System.currentTimeMillis() + "_" + filename;
+        String uploadUrl = generatePresignedPutUrl(key, contentType, expiresInSeconds);
+        String publicUrl = buildPublicUrl(key);
+        return new PresignResponse(key, uploadUrl, publicUrl, expiresInSeconds);
     }
 
 }

@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -59,6 +60,9 @@ public class S3ServiceImplement implements S3Service {
         try (S3Presigner presigner = S3Presigner.builder()
                 .region(awsRegion)
                 .credentialsProvider(credentialsProvider)
+                .serviceConfiguration(S3Configuration.builder()
+                        .accelerateModeEnabled(true) //Kích hoạt Transfer Acceleration
+                        .build())
                 .build()) {
 
             var putRequest = PutObjectRequest.builder()
@@ -78,10 +82,10 @@ public class S3ServiceImplement implements S3Service {
 
     @Override
     public String buildPublicUrl(String key) {
-        return String.format("https://%s.s3.%s.amazonaws.com/%s",
+        return String.format("https://%s.s3-accelerate.amazonaws.com/%s",
                 bucketName,
-                awsRegion.id(),
                 key
         );
     }
+
 }

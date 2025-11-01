@@ -156,7 +156,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Cacheable(value = "account_course", key = "{#accountId, #courseId}")
     public AccountCourseDto getByAccountIdAndCourseId(UUID accountId, UUID courseId) {
         var accountCourse = repository.findByAccountIdAndCourseId(accountId, courseId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với accountId: " + accountId + " và courseId: " + courseId));
+                .orElseThrow(() -> new EntityNotFoundException("Tài khoản chưa đăng ký khóa học này."));
         return AccountCourseMapper.toDto(accountCourse);
     }
 

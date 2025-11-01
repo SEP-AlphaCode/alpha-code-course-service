@@ -31,7 +31,7 @@ public class CourseBundleController {
     @PostMapping
     @Operation(summary = "Assign course to bundle")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")
-    public CourseBundleDto create(@RequestBody CreateCourseBundle request) {
+    public List<CourseBundleDto> create(@RequestBody CreateCourseBundle request) {
         return courseBundleService.create(request);
     }
 

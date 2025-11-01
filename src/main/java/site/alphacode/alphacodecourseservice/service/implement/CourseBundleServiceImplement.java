@@ -26,6 +26,7 @@ import site.alphacode.alphacodecourseservice.service.CourseBundleService;
 
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,37 +60,47 @@ public class CourseBundleServiceImplement implements CourseBundleService {
 
     @Override
     @Transactional
-    @CachePut(value = "course_bundle", key = "#result.id")
-    @CacheEvict(value = "courses_in_bundle", key = "#p0.bundleId")
-    public CourseBundleDto create(CreateCourseBundle request) {
-        log.info("Create CourseBundle request: courseId={}, bundleId={}", request.getCourseId(), request.getBundleId());
-        // 1. Kiểm tra các course có tồn tại không
-        var course = courseRepository.findActiveCourseById(request.getCourseId()).orElseThrow(
-                () -> new ResourceNotFoundException("Không tìm thấy courseId với id: " + request.getCourseId())
-        );
+    @CacheEvict(value = "courses_in_bundle", allEntries = true) // evict toàn bộ vì có thể nhiều bundleId
+    public List<CourseBundleDto> create(CreateCourseBundle request) {
+        log.info("Create CourseBundle request: courseId={}, bundleIds={}", request.getCourseId(), request.getBundleIds());
 
-        var bundle = bundleRepository.findNoneDeleteById(request.getBundleId()).orElseThrow(
-                () -> new ResourceNotFoundException("Không tìm thấy bundle với id: " + request.getBundleId())
-        );
+        //  Kiểm tra course có tồn tại không
+        var course = courseRepository.findActiveCourseById(request.getCourseId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy courseId với id: " + request.getCourseId()));
 
-        var courseBundleExists = courseBundleRepository.existsByCourseIdAndBundleId(request.getCourseId(), request.getBundleId());
-        if (courseBundleExists) {
-            throw new ConflictException("CourseBundle đã tồn tại với courseId: " + request.getCourseId() + " và bundleId: " + request.getBundleId());
+        List<CourseBundleDto> result = new ArrayList<>();
+
+        for (UUID bundleId : request.getBundleIds()) {
+            // Kiểm tra từng bundle
+            var bundle = bundleRepository.findNoneDeleteById(bundleId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bundle với id: " + bundleId));
+
+            // Kiểm tra trùng
+            boolean exists = courseBundleRepository.existsByCourseIdAndBundleId(request.getCourseId(), bundleId);
+            if (exists) {
+                log.warn("Bỏ qua: CourseBundle đã tồn tại (courseId={}, bundleId={})", request.getCourseId(), bundleId);
+                continue;
+            }
+
+            // Tạo mới
+            CourseBundle entity = new CourseBundle();
+            entity.setBundleId(bundleId);
+            entity.setCourseId(course.getId());
+            entity.setStatus(1);
+            entity.setCreatedDate(LocalDateTime.now());
+            entity.setLastUpdated(null);
+
+            var saved = courseBundleRepository.save(entity);
+            log.debug("Saved CourseBundle id={} (bundleId={}, courseId={})",
+                    saved.getId(), saved.getBundleId(), saved.getCourseId());
+
+            // CachePut cho từng phần tử nếu cần
+            result.add(CourseBundleMapper.toDto(saved));
         }
 
-        CourseBundle courseBundle = new CourseBundle();
-        courseBundle.setBundleId(bundle.getId());
-        courseBundle.setCourseId(course.getId());
-        courseBundle.setStatus(1);
-        courseBundle.setCreatedDate(LocalDateTime.now());
-        courseBundle.setLastUpdated(null);
-
-        // 2. Tạo course bundle
-        var savedCourseBundle = courseBundleRepository.save(courseBundle);
-        log.debug("Saved CourseBundle id={} (bundleId={}, courseId={})", savedCourseBundle.getId(), savedCourseBundle.getBundleId(), savedCourseBundle.getCourseId());
-
-        return CourseBundleMapper.toDto(savedCourseBundle);
+        return result;
     }
+
 
     @Override
     @Cacheable(value = "course_bundle", key = "{#id}")

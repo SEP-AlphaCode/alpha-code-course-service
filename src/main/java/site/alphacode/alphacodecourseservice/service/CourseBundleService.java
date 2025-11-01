@@ -13,6 +13,6 @@ public interface CourseBundleService {
     List<CourseDto> courseBundle(UUID bundleId);
     CourseBundleDto update(UUID id, UpdateCourseBundle updateCourseBundle);
     CourseBundleDto patch(UUID id, PatchCourseBundle request);
-    CourseBundleDto create(CreateCourseBundle createCourseBundle);
+    List<CourseBundleDto> create(CreateCourseBundle request);
     void delete(UUID id);
 }

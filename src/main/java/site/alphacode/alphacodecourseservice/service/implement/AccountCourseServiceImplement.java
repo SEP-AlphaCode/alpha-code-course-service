@@ -82,7 +82,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Transactional
     @CachePut(value = "account_course", key = "{#result.id}")
     @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
-    public AccountCourseDto createFromPayment(CreateAccountCourse createAccountCourse) {
+    public void createFromPayment(CreateAccountCourse createAccountCourse) {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
             throw new ConflictException("Khóa học đã được mua trước đó");
         }
@@ -99,7 +99,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         accountCourse.setTotalLesson(lessonRepository.countActiveLessonsByCourseId(createAccountCourse.getCourseId()));
 
         accountCourse = repository.save(accountCourse);
-        return AccountCourseMapper.toDto(accountCourse);
+        AccountCourseMapper.toDto(accountCourse);
     }
 
     @Override
@@ -150,6 +150,14 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         }
 
         return createdCourses;
+    }
+
+    @Override
+    @Cacheable(value = "account_course", key = "{#accountId, #courseId}")
+    public AccountCourseDto getByAccountIdAndCourseId(UUID accountId, UUID courseId) {
+        var accountCourse = repository.findByAccountIdAndCourseId(accountId, courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với accountId: " + accountId + " và courseId: " + courseId));
+        return AccountCourseMapper.toDto(accountCourse);
     }
 
 }

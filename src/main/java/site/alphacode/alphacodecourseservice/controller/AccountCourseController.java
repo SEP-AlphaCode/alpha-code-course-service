@@ -58,4 +58,9 @@ public class AccountCourseController {
         accountCourseService.delete(id);
     }
 
+    @GetMapping("get-by-account-and-course")
+    @Operation(summary = "Get account course by account id and course id")
+    public AccountCourseDto getByAccountAndCourse(@RequestParam UUID accountId, @RequestParam UUID courseId) {
+        return accountCourseService.getByAccountIdAndCourseId(accountId, courseId);
+    }
 }

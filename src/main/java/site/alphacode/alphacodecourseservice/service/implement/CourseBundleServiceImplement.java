@@ -60,32 +60,34 @@ public class CourseBundleServiceImplement implements CourseBundleService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "courses_in_bundle", allEntries = true) // evict toàn bộ vì có thể nhiều bundleId
+    @CacheEvict(value = "courses_in_bundle", allEntries = true)
     public List<CourseBundleDto> create(CreateCourseBundle request) {
-        log.info("Create CourseBundle request: courseId={}, bundleIds={}", request.getCourseId(), request.getBundleIds());
+        log.info("Create CourseBundle request: bundleId={}, courseIds={}", request.getBundleId(), request.getCourseIds());
 
-        //  Kiểm tra course có tồn tại không
-        var course = courseRepository.findActiveCourseById(request.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy courseId với id: " + request.getCourseId()));
+        // Kiểm tra bundle có tồn tại không
+        var bundle = bundleRepository.findNoneDeleteById(request.getBundleId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy bundle với id: " + request.getBundleId()));
 
         List<CourseBundleDto> result = new ArrayList<>();
 
-        for (UUID bundleId : request.getBundleIds()) {
-            // Kiểm tra từng bundle
-            var bundle = bundleRepository.findNoneDeleteById(bundleId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bundle với id: " + bundleId));
+        for (UUID courseId : request.getCourseIds()) {
+            // Kiểm tra course có tồn tại không
+            var course = courseRepository.findActiveCourseById(courseId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Không tìm thấy course với id: " + courseId));
 
             // Kiểm tra trùng
-            boolean exists = courseBundleRepository.existsByCourseIdAndBundleId(request.getCourseId(), bundleId);
+            boolean exists = courseBundleRepository.existsByCourseIdAndBundleId(courseId, request.getBundleId());
             if (exists) {
-                log.warn("Bỏ qua: CourseBundle đã tồn tại (courseId={}, bundleId={})", request.getCourseId(), bundleId);
+                log.warn("Bỏ qua: CourseBundle đã tồn tại (courseId={}, bundleId={})", courseId, request.getBundleId());
                 continue;
             }
 
             // Tạo mới
             CourseBundle entity = new CourseBundle();
-            entity.setBundleId(bundleId);
-            entity.setCourseId(course.getId());
+            entity.setCourseId(courseId);
+            entity.setBundleId(bundle.getId());
             entity.setStatus(1);
             entity.setCreatedDate(LocalDateTime.now());
             entity.setLastUpdated(null);
@@ -94,7 +96,6 @@ public class CourseBundleServiceImplement implements CourseBundleService {
             log.debug("Saved CourseBundle id={} (bundleId={}, courseId={})",
                     saved.getId(), saved.getBundleId(), saved.getCourseId());
 
-            // CachePut cho từng phần tử nếu cần
             result.add(CourseBundleMapper.toDto(saved));
         }
 

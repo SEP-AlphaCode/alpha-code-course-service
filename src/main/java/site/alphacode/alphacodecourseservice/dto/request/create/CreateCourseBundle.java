@@ -14,9 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateCourseBundle {
-    @NotEmpty(message = "Danh sách bundleId không được để trống")
-    private List<UUID> bundleIds;
+    @NotEmpty(message = "BundleId không được để trống")
+    private UUID bundleId;
 
-    @NotNull(message = "CourseId không được để trống")
-    private UUID courseId;
+    @NotNull(message = "Danh sách courseId không được để trống")
+    private List<UUID> courseIds;
 }

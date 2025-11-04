@@ -8,16 +8,24 @@ public class BundleMapper {
         if (bundle == null) {
             return null;
         }
-        return BundleDto.builder()
-                .id(bundle.getId())
-                .name(bundle.getName())
-                .description(bundle.getDescription())
-                .price(bundle.getPrice())
-                .discountPrice(bundle.getDiscountPrice())
-                .coverImage(bundle.getCoverImage())
-                .createdDate(bundle.getCreatedDate())
-                .lastUpdated(bundle.getLastUpdated())
-                .status(bundle.getStatus())
-                .build();
+        BundleDto bundleDto = new BundleDto();
+        bundleDto.setId(bundle.getId());
+        bundleDto.setName(bundle.getName());
+        bundleDto.setDescription(bundle.getDescription());
+        bundleDto.setPrice(bundle.getPrice());
+        bundleDto.setDiscountPrice(bundle.getDiscountPrice());
+        bundleDto.setCoverImage(bundle.getCoverImage());
+        bundleDto.setCreatedDate(bundle.getCreatedDate());
+        bundleDto.setLastUpdated(bundle.getLastUpdated());
+        bundleDto.setStatus(bundle.getStatus());
+        if (bundle.getCourseBundles() != null) {
+            bundleDto.setCourseIds(
+                    bundle.getCourseBundles()
+                            .stream()
+                            .map(cb -> cb.getCourse().getId()) // lấy id course
+                            .toList()
+            );
+        }
+        return bundleDto;
     }
 }

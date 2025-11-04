@@ -22,17 +22,28 @@ public interface BundleRepository extends JpaRepository<Bundle, UUID> {
     @Query("SELECT b FROM Bundle b WHERE b.id = :id AND b.status = :status")
     Optional<Bundle> findByIdAndStatus(@Param("id") UUID id, @Param("status") Integer status);
 
-    @Query("""
-       SELECT b FROM Bundle b
-       WHERE b.status = 1
-         AND (:searchTerm IS NULL OR :searchTerm = '' 
-              OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
-              OR LOWER(b.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
-       ORDER BY b.createdDate DESC
-       """)
-    Page<Bundle> findAllActiveBundles(@Param("searchTerm") String searchTerm,
+    @Query(value = """
+    SELECT DISTINCT b FROM Bundle b
+    LEFT JOIN FETCH b.courseBundles cb
+    LEFT JOIN FETCH cb.course c
+    WHERE b.status = 1
+      AND (:searchTerm IS NULL OR :searchTerm = '' 
+           OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+           OR LOWER(b.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+    ORDER BY b.createdDate DESC
+""",
+            countQuery = """
+    SELECT COUNT(b) FROM Bundle b
+    WHERE b.status = 1
+      AND (:searchTerm IS NULL OR :searchTerm = '' 
+           OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+           OR LOWER(b.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')))
+""")
+    Page<Bundle> findAllActiveBundles(
+            @Param("searchTerm") String searchTerm,
             Pageable pageable
     );
+
 
     @Query("""
        SELECT b FROM Bundle b

@@ -13,6 +13,7 @@ import site.alphacode.alphacodecourseservice.enums.BundleEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,6 +27,7 @@ public class BundleDto extends BaseEntityDto implements Serializable {
     private Integer price;
     private Integer discountPrice;
     private String coverImage;
+    private List<UUID> courseIds;
     @JsonProperty(value = "statusText")
     public String getStatusText() {
         return BundleEnum.fromCode(this.getStatus());

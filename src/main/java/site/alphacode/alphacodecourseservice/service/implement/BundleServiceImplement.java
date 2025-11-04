@@ -53,11 +53,26 @@ public class BundleServiceImplement implements BundleService {
 
     @Override
     @Cacheable(value = "bundles_list", key = "{#page, #size, #search}")
-    public PagedResult<BundleDto> getAllActiveBundles(Integer page, Integer size, String search){
+    public PagedResult<BundleDto> getAllActiveBundles(Integer page, Integer size, String search) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdDate").descending());
         Page<Bundle> bundlesPage = bundleRepository.findAllActiveBundles(search, pageable);
-        return new PagedResult<>(bundlesPage.map(BundleMapper::toDto));
+
+        Page<BundleDto> dtoPage = bundlesPage.map(bundle -> {
+            BundleDto dto = BundleMapper.toDto(bundle);
+
+            dto.setCourseIds(
+                    bundle.getCourseBundles()
+                            .stream()
+                            .map(cb -> cb.getCourse().getId())
+                            .toList()
+            );
+
+            return dto;
+        });
+
+        return new PagedResult<>(dtoPage);
     }
+
 
     @Override
     @Cacheable(value = "all_bundles_list", key = "{#page, #size, #search}")

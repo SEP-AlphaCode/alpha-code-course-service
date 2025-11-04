@@ -35,6 +35,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       private final AccountCourseRepository accountCourseRepository;
       private final LessonRepository lessonRepository;
       private final CertificateRepository certificateRepository;
+      private final AccountCourseServiceImplement accountCourseService;
 
     @Override
     @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
@@ -117,6 +118,9 @@ public class AccountLessonServiceImplement implements AccountLessonService {
         accountLesson.setCompletedAt(LocalDateTime.now());
         accountLesson.setStatus(2);
         AccountLesson updated = accountLessonRepository.save(accountLesson);
+
+        // Track learning time (duration của lesson) vào Redis
+        accountCourseService.trackLearningTime(accountLesson.getAccountId(), lesson.getDuration());
 
         // Cập nhật tiến độ khóa học
         var accountCourse = accountCourseRepository.findByAccountIdAndCourseId(accountLesson.getAccountId(), lesson.getSection().getCourseId())

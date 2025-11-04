@@ -11,6 +11,7 @@ import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 import site.alphacode.alphacodecourseservice.dto.response.AvailableCourse;
 import site.alphacode.alphacodecourseservice.dto.response.EnrolledCourses;
+import site.alphacode.alphacodecourseservice.dto.response.LearningDashboard;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 
@@ -76,5 +77,13 @@ public class AccountCourseController {
     @Operation(summary = "Get account course by account id and course id")
     public AccountCourseDto getByAccountAndCourse(@RequestParam UUID accountId, @RequestParam UUID courseId) {
         return accountCourseService.getByAccountIdAndCourseId(accountId, courseId);
+    }
+
+    @GetMapping("/learning-dashboard/{accountId}")
+    @Operation(summary = "Get learning dashboard for an account", 
+               description = "Returns learning statistics including total courses, completed lessons, learning hours this week (auto-tracked when completing lessons), recent activities, enrolled courses, and available courses")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
+    public LearningDashboard getLearningDashboard(@PathVariable UUID accountId) {
+        return accountCourseService.getLearningDashboard(accountId);
     }
 }

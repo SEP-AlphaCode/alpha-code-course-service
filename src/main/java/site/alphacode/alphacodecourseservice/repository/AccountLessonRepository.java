@@ -34,4 +34,26 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
     List<AccountLesson> findAllByAccountIdAndCourseId(@Param("accountId") UUID accountId, @Param("courseId") UUID courseId);
 
     Optional<AccountLesson> findByAccountIdAndLessonId(UUID accountId, UUID lessonId);
+
+    @Query("SELECT COUNT(al) FROM AccountLesson al WHERE al.accountId = :accountId AND al.status = :status")
+    Long countByAccountIdAndStatus(@Param("accountId") UUID accountId, @Param("status") Integer status);
+
+    @Query("""
+        SELECT new site.alphacode.alphacodecourseservice.dto.response.RecentActivity(
+            c.name, l.title, al.lastUpdated
+        )
+        FROM AccountLesson al
+        JOIN Lesson l ON al.lessonId = l.id
+        JOIN Section s ON l.sectionId = s.id
+        JOIN Course c ON s.courseId = c.id
+        WHERE al.accountId = :accountId 
+        AND al.status = 2
+        AND al.lastUpdated IS NOT NULL
+        ORDER BY al.lastUpdated DESC
+        LIMIT :limit
+    """)
+    List<site.alphacode.alphacodecourseservice.dto.response.RecentActivity> findRecentCompletedActivities(
+            @Param("accountId") UUID accountId, 
+            @Param("limit") int limit
+    );
 }

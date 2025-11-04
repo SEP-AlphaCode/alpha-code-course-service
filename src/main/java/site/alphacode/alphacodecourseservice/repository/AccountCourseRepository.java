@@ -48,6 +48,12 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
             "WHERE ac.accountId = :accountId AND ac.courseId IN :courseIds AND ac.status = 1")
     List<UUID> findOwnedCourseIds(UUID accountId, List<UUID> courseIds);
 
+    @Query("SELECT COUNT(ac) FROM AccountCourse ac WHERE ac.accountId = :accountId AND ac.status = 1")
+    Long countByAccountId(@Param("accountId") UUID accountId);
+
+    @Query("SELECT COUNT(ac) FROM AccountCourse ac WHERE ac.accountId = :accountId AND ac.status = :status")
+    Long countByAccountIdAndStatus(@Param("accountId") UUID accountId, @Param("status") Integer status);
+
 
     @Query("""
     SELECT ac FROM AccountCourse ac

@@ -9,38 +9,45 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
+import site.alphacode.alphacodecourseservice.dto.response.*;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
-import site.alphacode.alphacodecourseservice.dto.response.AvailableCourse;
-import site.alphacode.alphacodecourseservice.dto.response.EnrolledCourses;
-import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
 import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.mapper.AccountCourseMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
+import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseBundleRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 import site.alphacode.alphacodecourseservice.service.CourseService;
 
+import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AccountCourseServiceImplement implements AccountCourseService {
     private final AccountCourseRepository repository;
+    private final AccountLessonRepository accountLessonRepository;
     private final LessonRepository lessonRepository;
     private final CourseBundleRepository courseBundleRepository;
     private final CourseService courseService;
     private final CourseRepository courseRepository;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    private static final String LEARNING_HOURS_KEY_PREFIX = "learning:hours:";
 
     @Override
     @Transactional
@@ -227,6 +234,110 @@ public class AccountCourseServiceImplement implements AccountCourseService {
                         .description(course.getDescription())
                         .build())
                 .toList();
+    }
+
+    @Override
+    public LearningDashboard getLearningDashboard(UUID accountId) {
+        // Get learning statistics
+        LearningStats stats = getLearningStats(accountId);
+        
+        // Get recent activities (last 5 completed lessons)
+        List<RecentActivity> recentActivities = getRecentActivities(accountId, 5);
+        
+        // Get enrolled courses (last 3)
+        List<EnrolledCourses> enrolledCourses = getEnrolledCourses(accountId, 3);
+        
+        // Get available courses (last 3)
+        List<AvailableCourse> availableCourses = getAvailableCourses(accountId, 3);
+        
+        return LearningDashboard.builder()
+                .stats(stats)
+                .recentActivities(recentActivities)
+                .enrolledCourses(enrolledCourses)
+                .availableCourses(availableCourses)
+                .build();
+    }
+
+    // Method này được gọi từ AccountLessonService khi complete lesson
+    public void trackLearningTime(UUID accountId, Integer durationInSeconds) {
+        String key = getWeeklyLearningKey(accountId);
+        
+        try {
+            // Increment learning time in seconds
+            redisTemplate.opsForValue().increment(key, durationInSeconds);
+            
+            // Set expiration to end of week (Sunday 23:59:59)
+            LocalDateTime endOfWeek = LocalDateTime.now()
+                    .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
+                    .withHour(23)
+                    .withMinute(59)
+                    .withSecond(59);
+            
+            long secondsUntilEndOfWeek = Duration.between(LocalDateTime.now(), endOfWeek).getSeconds();
+            redisTemplate.expire(key, secondsUntilEndOfWeek, TimeUnit.SECONDS);
+            
+            log.info("Auto-tracked {} seconds for account {} (completed lesson)", durationInSeconds, accountId);
+        } catch (Exception e) {
+            log.error("Error tracking learning time for account {}: {}", accountId, e.getMessage());
+        }
+    }
+
+    private LearningStats getLearningStats(UUID accountId) {
+        // Total courses enrolled
+        Long totalCourses = repository.countByAccountId(accountId);
+        
+        // Completed courses (status = 2)
+        Long completedCourses = repository.countByAccountIdAndStatus(accountId, 2);
+        
+        // In-progress courses (status = 1)
+        Long inProgressCourses = repository.countByAccountIdAndStatus(accountId, 1);
+        
+        // Total lessons completed (status = 2)
+        Long totalLessonsCompleted = accountLessonRepository.countByAccountIdAndStatus(accountId, 2);
+        
+        // Get learning hours this week from Redis
+        Double learningHours = getLearningHoursThisWeek(accountId);
+        
+        return LearningStats.builder()
+                .totalCourses(totalCourses != null ? totalCourses.intValue() : 0)
+                .completedCourses(completedCourses != null ? completedCourses.intValue() : 0)
+                .inProgressCourses(inProgressCourses != null ? inProgressCourses.intValue() : 0)
+                .totalLessonsCompleted(totalLessonsCompleted != null ? totalLessonsCompleted.intValue() : 0)
+                .learningHoursThisWeek(learningHours)
+                .build();
+    }
+
+    private List<RecentActivity> getRecentActivities(UUID accountId, int limit) {
+        return accountLessonRepository.findRecentCompletedActivities(accountId, limit);
+    }
+
+    private Double getLearningHoursThisWeek(UUID accountId) {
+        String key = getWeeklyLearningKey(accountId);
+        
+        try {
+            String value = redisTemplate.opsForValue().get(key);
+            if (value != null) {
+                // Convert seconds to hours
+                long seconds = Long.parseLong(value);
+                return Math.round(seconds / 3600.0 * 10.0) / 10.0; // Round to 1 decimal place
+            }
+        } catch (Exception e) {
+            log.error("Error getting learning hours for account {}: {}", accountId, e.getMessage());
+        }
+        
+        return 0.0;
+    }
+
+    private String getWeeklyLearningKey(UUID accountId) {
+        // Get the start of current week (Monday)
+        LocalDateTime startOfWeek = LocalDateTime.now()
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                .withHour(0)
+                .withMinute(0)
+                .withSecond(0);
+        
+        String weekKey = startOfWeek.toLocalDate().toString();
+        return LEARNING_HOURS_KEY_PREFIX + accountId + ":" + weekKey;
     }
 
 }

@@ -4,6 +4,7 @@ import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
 import site.alphacode.alphacodecourseservice.dto.response.AvailableCourse;
 import site.alphacode.alphacodecourseservice.dto.response.EnrolledCourses;
+import site.alphacode.alphacodecourseservice.dto.response.LearningDashboard;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 
 import java.util.List;
@@ -19,4 +20,5 @@ public interface AccountCourseService {
     AccountCourseDto getByAccountIdAndCourseId(UUID accountId, UUID courseId);
     List<EnrolledCourses> getEnrolledCourses(UUID accountId, Integer size);
     List<AvailableCourse> getAvailableCourses(UUID accountId, Integer size);
+    LearningDashboard getLearningDashboard(UUID accountId);
 }

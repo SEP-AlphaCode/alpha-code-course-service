@@ -137,6 +137,65 @@ public class SectionServiceImplement implements SectionService {
         }).toList();
     }
 
+    @Override
+    public List<SectionWithAccountLesson> getAllSectionWithAccountLessonBySlug(String slug, UUID accountId) {
+        // Kiểm tra course tồn tại
+        var course = courseRepository.findCourseBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Course với slug " + slug + " không tồn tại."));
+
+        // Lấy tất cả sections của course
+        List<Section> sections = sectionRepository.findAllByCourseId(course.getId());
+
+        // Gán lessons cho từng section, giữ thứ tự
+        sections.forEach(section -> {
+            List<Lesson> lessons = lessonRepository.findAllBySectionIdOrderByOrderNumberAsc(section.getId());
+            if (lessons == null) {
+                lessons = new ArrayList<>();
+            }
+            // Dùng LinkedHashSet để giữ thứ tự
+            section.setLessons(lessons);
+        });
+
+        // Lấy tất cả AccountLesson của account và course
+        List<AccountLesson> accountLessons = accountLessonRepository.findAllByAccountIdAndCourseId(accountId, course.getId());
+
+        // Chuyển sang Map để truy xuất nhanh theo lessonId
+        Map<UUID, AccountLesson> accountLessonMap = accountLessons.stream()
+                .collect(Collectors.toMap(a -> a.getLesson().getId(), a -> a));
+
+        // Map từng section sang SectionWithAccountLesson
+        return (List<SectionWithAccountLesson>) sections.stream().map(section -> {
+            // Copy ra List để xử lý, tránh sửa trực tiếp Set gốc
+            List<Lesson> lessonList = new ArrayList<>(section.getLessons());
+
+            // Map từng lesson sang AccountLessonDto
+            List<AccountLessonDto> accountLessonDtos = (List<AccountLessonDto>) lessonList.stream()
+                    .map(lesson -> {
+                        AccountLesson accLesson = accountLessonMap.get(lesson.getId());
+                        return AccountLessonDto.builder()
+                                .id(accLesson != null ? accLesson.getId() : null)
+                                .accountId(accountId)
+                                .lessonId(lesson.getId())
+                                .status(accLesson != null ? accLesson.getStatus() : 0)
+                                .completedAt(accLesson != null ? accLesson.getCompletedAt() : null)
+                                .lesson(LessonMapper.toDto(lesson))
+                                .build();
+                    })
+                    .toList();
+
+
+            // Build SectionWithAccountLesson
+            return SectionWithAccountLesson.builder()
+                    .id(section.getId())
+                    .title(section.getTitle())
+                    .orderNumber(section.getOrderNumber())
+                    .courseId(section.getCourseId())
+                    .accountLessons(accountLessonDtos)
+                    .status(section.getStatus())
+                    .build();
+        }).toList();
+    }
+
 
 
     @Override

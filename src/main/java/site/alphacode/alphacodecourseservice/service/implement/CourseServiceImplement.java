@@ -27,6 +27,7 @@ import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.util.SlugHelper;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -67,6 +68,14 @@ public class CourseServiceImplement implements CourseService {
             throw new ResourceNotFoundException("Khóa học với slug " + slug + " không tồn tại.");
         }
         return CourseMapper.toDto(entity.get());
+    }
+
+    @Override
+    public List<Course> getCoursesByIds(List<UUID> courseIds) {
+        if (courseIds == null || courseIds.isEmpty()) {
+            return List.of();
+        }
+        return courseRepository.findAllByIds(courseIds);
     }
 
     @Override

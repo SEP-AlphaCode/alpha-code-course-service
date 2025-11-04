@@ -5,7 +5,9 @@ import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateCourse;
 import site.alphacode.alphacodecourseservice.dto.request.patch.PatchCourse;
 import site.alphacode.alphacodecourseservice.dto.request.update.UpdateCourse;
+import site.alphacode.alphacodecourseservice.entity.Course;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface CourseService {
@@ -21,4 +23,5 @@ public interface CourseService {
     PagedResult<CourseDto> getNoneDeleteCoursesByCategoryId(UUID id, int page, int size);
     PagedResult<CourseDto> getAllFreeActiveCourses(int page, int size, String search, UUID categoryId);
     PagedResult<CourseDto> getAllCostActiveCourses(int page, int size, String search, UUID categoryId);
+    List<Course> getCoursesByIds(List<UUID> courseIds);
 }

@@ -13,12 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
+import site.alphacode.alphacodecourseservice.dto.response.AvailableCourse;
+import site.alphacode.alphacodecourseservice.dto.response.EnrolledCourses;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
+import site.alphacode.alphacodecourseservice.entity.Course;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.mapper.AccountCourseMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseBundleRepository;
+import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 import site.alphacode.alphacodecourseservice.service.CourseService;
@@ -36,6 +40,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     private final LessonRepository lessonRepository;
     private final CourseBundleRepository courseBundleRepository;
     private final CourseService courseService;
+    private final CourseRepository courseRepository;
 
     @Override
     @Transactional
@@ -51,7 +56,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Override
     @Transactional
     @CachePut(value = "account_course", key = "{#result.id}")
-    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course", "available_courses"}, allEntries = true)
     public AccountCourseDto create(CreateAccountCourse createAccountCourse) {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
             throw new ConflictException("Khóa học đã được mua trước đó");
@@ -81,7 +86,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
     @Override
     @Transactional
     @CachePut(value = "account_course", key = "{#result.id}")
-    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course", "available_courses"}, allEntries = true)
     public void createFromPayment(CreateAccountCourse createAccountCourse) {
         if(repository.existsByAccountIdAndCourseId(createAccountCourse.getAccountId(), createAccountCourse.getCourseId())) {
             throw new ConflictException("Khóa học đã được mua trước đó");
@@ -112,7 +117,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course", "available_courses"}, allEntries = true)
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
@@ -121,7 +126,7 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"account_courses", "account_course"}, allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course", "available_courses"}, allEntries = true)
     public List<AccountCourseDto> createFromBundle(UUID accountId, UUID bundleId) {
         // Giả sử bạn có repository CourseBundleRepository để lấy danh sách course trong bundle
         List<UUID> courseIdsInBundle = courseBundleRepository.findCourseIdsByBundleId(bundleId);
@@ -158,6 +163,70 @@ public class AccountCourseServiceImplement implements AccountCourseService {
         var accountCourse = repository.findByAccountIdAndCourseId(accountId, courseId)
                 .orElseThrow(() -> new EntityNotFoundException("Tài khoản chưa đăng ký khóa học này."));
         return AccountCourseMapper.toDto(accountCourse);
+    }
+
+    @Override
+    @Cacheable(value = "enrolled_courses", key = "{#accountId, #size}")
+    public List<EnrolledCourses> getEnrolledCourses(UUID accountId, Integer size) {
+        // Lấy danh sách AccountCourse mới nhất theo accountId, giới hạn bằng Pageable
+        List<AccountCourse> accountCourses = repository.findAccountCourseByAccountId(
+                accountId,
+                PageRequest.of(0, size)
+        );
+
+        if (accountCourses.isEmpty()) {
+            return List.of();
+        }
+
+        // Lấy danh sách courseId từ accountCourse
+        List<UUID> courseIds = accountCourses.stream()
+                .map(AccountCourse::getCourseId)
+                .toList();
+
+        // Gọi sang service course để lấy thông tin chi tiết từng khóa học
+        var courses = courseService.getCoursesByIds(courseIds);
+
+        // Gộp dữ liệu lại thành danh sách EnrolledCourses (DTO cho từng khóa học)
+        return accountCourses.stream()
+                .map(ac -> {
+                    var course = courses.stream()
+                            .filter(c -> c.getId().equals(ac.getCourseId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    return EnrolledCourses.builder()
+                            .id(ac.getCourseId())
+                            .name(course != null ? course.getName() : null)
+                            .imageUrl(course != null ? course.getImageUrl() : null)
+                            .progressPercent(ac.getProgressPercent())
+                            .completedLesson(ac.getCompletedLesson())
+                            .totalLesson(ac.getTotalLesson())
+                            .lastAccessed(ac.getLastAccessed() != null ? ac.getLastAccessed().toString() : null)
+                            .slug(course != null ? course.getSlug() : null)
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    @Cacheable(value = "available_courses", key = "{#accountId, #size}")
+    public List<AvailableCourse> getAvailableCourses(UUID accountId, Integer size) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        List<Course> availableCourses =
+                courseRepository.findAvailableCourses(accountId, pageable);
+
+        return availableCourses.stream()
+                .map(course -> AvailableCourse.builder()
+                        .id(course.getId())
+                        .name(course.getName())
+                        .imageUrl(course.getImageUrl())
+                        .totalLesson(course.getTotalLessons())
+                        .slug(course.getSlug())
+                        .price(course.getPrice())
+                        .description(course.getDescription())
+                        .build())
+                .toList();
     }
 
 }

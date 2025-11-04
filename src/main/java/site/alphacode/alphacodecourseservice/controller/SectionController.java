@@ -68,6 +68,15 @@ public class SectionController {
         return sectionService.getAllSectionWithAccountLesson(courseId, accountId);
     }
 
+    @GetMapping("/with-account-lessons/by-slug")
+    @Operation(summary = "Get all sections with account lessons by course id and account id")
+    public List<SectionWithAccountLesson> getSectionsWithAccountLessons(
+            @RequestParam String slug,
+            @RequestParam UUID accountId
+    ) {
+        return sectionService.getAllSectionWithAccountLessonBySlug(slug, accountId);
+    }
+
     @PutMapping("/{courseId}/sections/reorder")
     @Operation(summary = "Reorder sections (Admin and Staff only)")
     @PreAuthorize("hasAnyAuthority('ROLE_Admin', 'ROLE_Staff')")

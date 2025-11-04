@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.Course;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -96,5 +97,20 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
 
     @Query("SELECT c FROM Course c WHERE c.category.id = :categoryId AND c.status <> 0")
     Page<Course> findNoneDeleteCoursesByCategoryId(UUID categoryId, Pageable pageable);
+
+    @Query("""
+        SELECT c FROM Course c
+        WHERE c.id IN :courseIds
+        """)
+    List<Course> findAllByIds(@Param("courseIds") List<UUID> courseIds);
+
+    @Query("""
+    SELECT c FROM Course c
+    WHERE c.id NOT IN (
+        SELECT ac.courseId FROM AccountCourse ac WHERE ac.accountId = :accountId
+    )
+    ORDER BY c.createdDate DESC
+    """)
+    List<Course> findAvailableCourses(@Param("accountId") UUID accountId, Pageable pageable);
 }
 

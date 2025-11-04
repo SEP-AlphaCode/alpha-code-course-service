@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.AccountCourse;
+import site.alphacode.alphacodecourseservice.entity.Course;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,4 +47,13 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
     @Query("SELECT ac.courseId FROM AccountCourse ac " +
             "WHERE ac.accountId = :accountId AND ac.courseId IN :courseIds AND ac.status = 1")
     List<UUID> findOwnedCourseIds(UUID accountId, List<UUID> courseIds);
+
+
+    @Query("""
+    SELECT ac FROM AccountCourse ac
+    WHERE ac.accountId = :accountId
+    ORDER BY ac.purchaseDate DESC
+    """)
+    List<AccountCourse> findAccountCourseByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
+
 }

@@ -19,4 +19,5 @@ public interface  SectionService {
     void delete(UUID sectionId);
     void reorder(UUID courseId ,ReorderSectionsRequest request);
     List<SectionWithAccountLesson> getAllSectionWithAccountLesson(UUID courseId, UUID accountId);
+    List<SectionWithAccountLesson> getAllSectionWithAccountLessonBySlug(String slug, UUID accountId);
 }

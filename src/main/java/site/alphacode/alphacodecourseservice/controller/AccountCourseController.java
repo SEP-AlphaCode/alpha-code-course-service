@@ -9,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.response.AccountCourseDto;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountCourse;
+import site.alphacode.alphacodecourseservice.dto.response.AvailableCourse;
+import site.alphacode.alphacodecourseservice.dto.response.EnrolledCourses;
 import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
 import site.alphacode.alphacodecourseservice.service.AccountCourseService;
 
@@ -32,6 +34,18 @@ public class AccountCourseController {
     @Operation(summary = "Get account course by id")
     public AccountCourseDto getAccountCourseById(@PathVariable UUID id) {
         return accountCourseService.getAccountCourseById(id);
+    }
+
+    @GetMapping("/enrolled-courses")
+    @Operation(summary = "Get enrolled courses by account id")
+    public List<EnrolledCourses> getEnrolledCoursesByAccountId(@RequestParam UUID accountId, @RequestParam Integer size) {
+        return accountCourseService.getEnrolledCourses(accountId, size);
+    }
+
+    @GetMapping("/available-courses")
+    @Operation(summary = "Get available courses by account id that not enrolled yet")
+    public List<AvailableCourse> getAvailableCoursesByAccountId(@RequestParam UUID accountId, @RequestParam Integer size) {
+        return accountCourseService.getAvailableCourses(accountId, size);
     }
 
     @PostMapping

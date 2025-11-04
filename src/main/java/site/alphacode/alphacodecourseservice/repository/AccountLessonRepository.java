@@ -46,7 +46,7 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
         JOIN Lesson l ON al.lessonId = l.id
         JOIN Section s ON l.sectionId = s.id
         JOIN Course c ON s.courseId = c.id
-        WHERE al.accountId = :accountId 
+        WHERE al.accountId = :accountId
         AND al.status = 2
         AND al.lastUpdated IS NOT NULL
         ORDER BY al.lastUpdated DESC

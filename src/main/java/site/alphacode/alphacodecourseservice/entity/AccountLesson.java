@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.GenericGenerator;
+import site.alphacode.alphacodecourseservice.base.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class AccountLesson {
+public class AccountLesson extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -32,9 +33,6 @@ public class AccountLesson {
 
     @Column(name = "lesson_id", nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID lessonId;
-
-    @Column(name = "status", nullable = false)
-    private Integer status;
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

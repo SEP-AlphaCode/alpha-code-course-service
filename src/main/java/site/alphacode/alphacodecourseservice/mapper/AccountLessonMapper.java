@@ -16,6 +16,8 @@ public class AccountLessonMapper {
         dto.setLessonId(entity.getLessonId());
         dto.setStatus(entity.getStatus());
         dto.setCompletedAt(entity.getCompletedAt());
+        dto.setCreatedDate(entity.getCreatedDate());
+        dto.setLastUpdated(entity.getLastUpdated());
         return dto;
     }
 
@@ -32,6 +34,8 @@ public class AccountLessonMapper {
         dto.setStatus(accountLesson.getStatus());
         dto.setCompletedAt(accountLesson.getCompletedAt());
         dto.setLesson(LessonMapper.toLearnLesson(lesson));
+        dto.setCreatedDate(accountLesson.getCreatedDate());
+        dto.setLastUpdated(accountLesson.getLastUpdated());
 
         return dto;
     }

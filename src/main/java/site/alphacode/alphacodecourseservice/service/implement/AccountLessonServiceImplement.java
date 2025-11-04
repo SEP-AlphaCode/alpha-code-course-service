@@ -63,6 +63,9 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                 LocalDateTime.now()
         );
 
+        accountLesson.setLastUpdated(LocalDateTime.now());
+        accountLessonRepository.save(accountLesson);
+
         return Optional.ofNullable(AccountLessonMapper.toAccountLessonWithLesson(accountLesson, lesson));
     }
 
@@ -92,6 +95,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                 .lessonId(createAccountLesson.getLessonId())
                 .status(1)
                 .completedAt(null)
+                .createdDate(LocalDateTime.now())
                 .build();
 
         AccountLesson saved = accountLessonRepository.save(accountLesson);
@@ -117,6 +121,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
         // Cập nhật trạng thái
         accountLesson.setCompletedAt(LocalDateTime.now());
         accountLesson.setStatus(2);
+        accountLesson.setLastUpdated(LocalDateTime.now());
         AccountLesson updated = accountLessonRepository.save(accountLesson);
 
         // Track learning time (duration của lesson) vào Redis

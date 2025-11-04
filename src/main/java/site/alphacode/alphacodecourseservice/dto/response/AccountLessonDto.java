@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import site.alphacode.alphacodecourseservice.base.BaseEntityDto;
 import site.alphacode.alphacodecourseservice.enums.AccountLessonEnum;
 import site.alphacode.alphacodecourseservice.enums.CategoryEnum;
 
@@ -18,14 +19,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-public class AccountLessonDto implements Serializable {
+public class AccountLessonDto extends BaseEntityDto implements Serializable {
     private UUID id;
 
     private UUID accountId;
 
     private UUID lessonId;
-
-    private Integer status;
 
     private LocalDateTime completedAt;
 

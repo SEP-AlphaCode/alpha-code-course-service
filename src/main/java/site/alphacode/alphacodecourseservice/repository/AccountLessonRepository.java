@@ -57,5 +57,5 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
             @Param("limit") int limit
     );
 
-    void deleteByLessonId(UUID lessonId);
+    void deleteAllByLessonId(UUID lessonId);
 }

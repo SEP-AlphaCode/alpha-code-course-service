@@ -341,7 +341,7 @@ public class LessonServiceImplement implements LessonService {
         int deletedOrder = existing.getOrderNumber();
         UUID sectionId = existing.getSectionId();
 
-        accountLessonRepository.deleteByLessonId(existing.getId());
+        accountLessonRepository.deleteAllByLessonId(existing.getId());
 
         lessonRepository.delete(existing);
 

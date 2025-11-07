@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import site.alphacode.alphacodecourseservice.enums.LessonStatusEnum;
+import site.alphacode.alphacodecourseservice.enums.LessonTypeEnum;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -26,6 +27,6 @@ public class LearnLesson implements Serializable {
 
     @JsonProperty(value = "typeText")
     public String getTypeText() {
-        return LessonStatusEnum.fromCode(this.getType());
+        return LessonTypeEnum.fromCode(this.getType());
     }
 }

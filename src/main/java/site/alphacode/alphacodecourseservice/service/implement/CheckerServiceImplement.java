@@ -10,6 +10,8 @@ import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.service.CheckerService;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -40,22 +42,22 @@ public class CheckerServiceImplement implements CheckerService {
         JsonNode requiredActions = getLessonSolution(submission.getAccountLessonId());
         ArrayNode missingActions = objectMapper.createArrayNode();
 
-        // Duyệt từng hành động yêu cầu
-        for (JsonNode required : requiredActions) {
-            boolean found = false;
-
-            for (JsonNode performed : logData.get("logs")) {
-                if (performed.get("type").asText().equalsIgnoreCase(required.get("type").asText())
-                        && performed.get("code").asText().equalsIgnoreCase(required.get("code").asText())) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) missingActions.add(required);
+        // Tạo tập hợp các hành động đã thực hiện
+        Set<String> performedSet = new HashSet<>();
+        for (JsonNode performed : logData.get("logs")) {
+            String key = performed.get("type").asText().toLowerCase() + ":" + performed.get("code").asText().toLowerCase();
+            performedSet.add(key);
         }
 
-        // Nếu đủ hành động thì PASS, ngược lại FAIL
+        // Kiểm tra từng hành động yêu cầu
+        for (JsonNode required : requiredActions) {
+            String key = required.get("type").asText().toLowerCase() + ":" + required.get("code").asText().toLowerCase();
+            if (!performedSet.contains(key)) {
+                missingActions.add(required);
+            }
+        }
+
+        // Kết quả cuối cùng
         if (missingActions.isEmpty()) {
             submission.setStatus(2); // PASSED
             submission.setMissingActions(null);
@@ -66,5 +68,6 @@ public class CheckerServiceImplement implements CheckerService {
             return false;
         }
     }
+
 
 }

@@ -22,8 +22,8 @@ public class AccountLessonWithLesson extends BaseEntityDto implements Serializab
     private UUID lessonId;
     private UUID accountId;
     private LearnLesson lesson;
-    @JsonProperty(value = "typeStatus")
-    public String getTypeStatus() {
+    @JsonProperty(value = "statusText")
+    public String getStatusText() {
         return AccountLessonEnum.fromCode(this.getStatus());
     }
 }

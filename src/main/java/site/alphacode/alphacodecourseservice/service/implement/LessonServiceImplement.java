@@ -25,6 +25,7 @@ import site.alphacode.alphacodecourseservice.entity.Section;
 import site.alphacode.alphacodecourseservice.exception.ConflictException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.LessonMapper;
+import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CourseRepository;
 import site.alphacode.alphacodecourseservice.repository.LessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SectionRepository;
@@ -44,6 +45,7 @@ public class LessonServiceImplement implements LessonService {
     private final CourseRepository courseRepository;
     // S3 uploads are now done on FE via presigned URLs
     private final CacheManager cacheManager;
+    private final AccountLessonRepository accountLessonRepository;
 
     // ==================== GET ====================
     @Override
@@ -324,7 +326,8 @@ public class LessonServiceImplement implements LessonService {
             @CacheEvict(value = "lessons_with_solution_list", allEntries = true),
             @CacheEvict(value = "lesson_with_solution", allEntries = true),
             @CacheEvict(value = "lesson_by_slug", allEntries = true),
-            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true)
+            @CacheEvict(value = "lesson_with_solution_by_slug", allEntries = true),
+            @CacheEvict(value = {"account_lessons", "account_lesson_with_lesson"}, allEntries = true)
     })
     public void delete(UUID lessonId) {
         Lesson existing = lessonRepository.findById(lessonId)
@@ -337,6 +340,8 @@ public class LessonServiceImplement implements LessonService {
         // Remember the order and section before deletion so we can shift subsequent lessons
         int deletedOrder = existing.getOrderNumber();
         UUID sectionId = existing.getSectionId();
+
+        accountLessonRepository.deleteByLessonId(existing.getId());
 
         lessonRepository.delete(existing);
 

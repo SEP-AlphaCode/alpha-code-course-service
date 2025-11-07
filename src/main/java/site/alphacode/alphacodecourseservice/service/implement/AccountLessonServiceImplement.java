@@ -17,6 +17,7 @@ import site.alphacode.alphacodecourseservice.entity.AccountLesson;
 import site.alphacode.alphacodecourseservice.entity.Certificate;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
 import site.alphacode.alphacodecourseservice.mapper.AccountLessonMapper;
+import site.alphacode.alphacodecourseservice.producer.CourseProducer;
 import site.alphacode.alphacodecourseservice.repository.AccountCourseRepository;
 import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.CertificateRepository;
@@ -36,6 +37,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
       private final LessonRepository lessonRepository;
       private final CertificateRepository certificateRepository;
       private final AccountCourseServiceImplement accountCourseService;
+    private final CourseProducer courseProducer;
 
     @Override
     @Cacheable(value = "account_lessons", key = "{#courseId, #accountId, #page, #size}")
@@ -149,6 +151,8 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                 certificate.setStatus(1);
                 certificateRepository.save(certificate);
             }
+
+            courseProducer.sendCourseCompletedMessage(accountCourse.getAccountId().toString(), accountCourse.getCourseId().toString(), accountCourse.getCourse().getName());
         }
 
         AccountLessonMapper.toAccountLessonWithLesson(updated, lesson);

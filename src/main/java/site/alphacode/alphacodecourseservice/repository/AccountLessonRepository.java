@@ -58,4 +58,12 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
     );
 
     void deleteAllByLessonId(UUID lessonId);
+
+    @Query("""
+        SELECT al FROM AccountLesson al
+        JOIN Lesson l ON al.lessonId = l.id
+        JOIN Section s ON l.sectionId = s.id
+        WHERE s.courseId = :courseId
+    """)
+    List<AccountLesson> findAllByCourseId(@Param("courseId") UUID courseId);
 }

@@ -62,4 +62,7 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
     """)
     List<AccountCourse> findAccountCourseByAccountId(@Param("accountId") UUID accountId, Pageable pageable);
 
+    @Query("SELECT ac FROM AccountCourse ac WHERE ac.courseId = :courseId")
+    List<AccountCourse> findAllByCourseId(@Param("courseId") UUID courseId);
+
 }

@@ -40,6 +40,8 @@ public class CourseServiceImplement implements CourseService {
     private final SectionRepository sectionRepository;
     private final LessonRepository lessonRepository;
     private final org.springframework.cache.CacheManager cacheManager;
+    private final site.alphacode.alphacodecourseservice.repository.AccountLessonRepository accountLessonRepository;
+    private final site.alphacode.alphacodecourseservice.repository.AccountCourseRepository accountCourseRepository;
 
     @Override
     @Cacheable(value = "course", key = "{#id}")
@@ -408,6 +410,24 @@ public class CourseServiceImplement implements CourseService {
         existing.setTotalDuration(0);
         existing.setLastUpdated(now);
         courseRepository.save(existing);
+
+        // Soft delete all AccountLessons and AccountCourses related to this course
+        var accountLessons = accountLessonRepository.findAllByCourseId(id);
+        if (!accountLessons.isEmpty()) {
+            for (var al : accountLessons) {
+                al.setStatus(0);
+                al.setLastUpdated(now);
+            }
+            accountLessonRepository.saveAll(accountLessons);
+        }
+
+        var accountCourses = accountCourseRepository.findAllByCourseId(id);
+        if (!accountCourses.isEmpty()) {
+            for (var ac : accountCourses) {
+                ac.setStatus(0);
+            }
+            accountCourseRepository.saveAll(accountCourses);
+        }
 
         // Evict specific caches by key where possible
         var courseCache = cacheManager.getCache("course");

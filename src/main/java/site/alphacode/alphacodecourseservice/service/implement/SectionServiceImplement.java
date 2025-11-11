@@ -41,6 +41,7 @@ public class SectionServiceImplement implements SectionService {
     private final LessonRepository lessonRepository;
     private final org.springframework.cache.CacheManager cacheManager;
     private final AccountLessonRepository accountLessonRepository;
+    private final site.alphacode.alphacodecourseservice.repository.SubmissionRepository submissionRepository;
 
     @Override
     @Cacheable(value = "section", key = "#id")
@@ -113,12 +114,21 @@ public class SectionServiceImplement implements SectionService {
             List<AccountLessonDto> accountLessonDtos = (List<AccountLessonDto>) lessonList.stream()
                     .map(lesson -> {
                         AccountLesson accLesson = accountLessonMap.get(lesson.getId());
+
+                        // Lấy submission status nếu có accountLesson
+                        Integer submissionStatus = null;
+                        if (accLesson != null) {
+                            var latestSubmission = submissionRepository.findTopByAccountLessonIdOrderByCreatedDateDesc(accLesson.getId());
+                            submissionStatus = latestSubmission.map(site.alphacode.alphacodecourseservice.entity.Submission::getStatus).orElse(null);
+                        }
+
                         return AccountLessonDto.builder()
                                 .id(accLesson != null ? accLesson.getId() : null)
                                 .accountId(accountId)
                                 .lessonId(lesson.getId())
                                 .status(accLesson != null ? accLesson.getStatus() : 0)
                                 .completedAt(accLesson != null ? accLesson.getCompletedAt() : null)
+                                .submissionStatus(submissionStatus)
                                 .lesson(LessonMapper.toDto(lesson))
                                 .build();
                     })
@@ -172,12 +182,21 @@ public class SectionServiceImplement implements SectionService {
             List<AccountLessonDto> accountLessonDtos = (List<AccountLessonDto>) lessonList.stream()
                     .map(lesson -> {
                         AccountLesson accLesson = accountLessonMap.get(lesson.getId());
+
+                        // Lấy submission status nếu có accountLesson
+                        Integer submissionStatus = null;
+                        if (accLesson != null) {
+                            var latestSubmission = submissionRepository.findTopByAccountLessonIdOrderByCreatedDateDesc(accLesson.getId());
+                            submissionStatus = latestSubmission.map(site.alphacode.alphacodecourseservice.entity.Submission::getStatus).orElse(null);
+                        }
+
                         return AccountLessonDto.builder()
                                 .id(accLesson != null ? accLesson.getId() : null)
                                 .accountId(accountId)
                                 .lessonId(lesson.getId())
                                 .status(accLesson != null ? accLesson.getStatus() : 0)
                                 .completedAt(accLesson != null ? accLesson.getCompletedAt() : null)
+                                .submissionStatus(submissionStatus)
                                 .lesson(LessonMapper.toDto(lesson))
                                 .build();
                     })

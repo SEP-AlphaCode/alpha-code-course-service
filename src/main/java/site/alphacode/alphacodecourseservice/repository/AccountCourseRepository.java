@@ -19,7 +19,7 @@ public interface AccountCourseRepository extends JpaRepository<AccountCourse, UU
     SELECT ac FROM AccountCourse ac
     JOIN FETCH ac.course
     WHERE ac.accountId = :accountId
-      AND ac.status = 1
+      AND ac.status <> 0
     ORDER BY ac.purchaseDate DESC
 """)
     Page<AccountCourse> findActiveByAccountId(@Param("accountId") UUID accountId, Pageable pageable);

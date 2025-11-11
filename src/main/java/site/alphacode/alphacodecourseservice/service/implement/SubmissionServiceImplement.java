@@ -93,6 +93,9 @@ public class SubmissionServiceImplement implements SubmissionService {
             boolean isPass = checkerService.autoCheck(submission);
             if (isPass) {
                 submission.setStatus(2); // 2 = PASSED
+                log.info("Tạo submission cho accountLessonId={} với status={}", request.getAccountLessonId(), submission.getStatus());
+
+                submissionRepository.save(submission);
                 // Cập nhật hoàn thành bài học
                 if (accountLesson.getCompletedAt() == null) {
                     accountLessonService.markComplete(request.getAccountLessonId());

@@ -74,13 +74,13 @@ public class SubmissionServiceImplement implements SubmissionService {
             }
         }
 
-        Submission submission = Submission.builder()
-                .accountLessonId(request.getAccountLessonId())
-                .logData(logData)
-                .videoUrl(videoUrl)
-                .createdDate(LocalDateTime.now())
-                .status(1)
-                .build();
+        Submission submission = new Submission();
+
+        submission.setAccountLessonId(request.getAccountLessonId());
+        submission.setLogData(logData);
+        submission.setVideoUrl(videoUrl);
+        submission.setCreatedDate(LocalDateTime.now());
+        submission.setStatus(1); // 1 = Đã nộp
 
         // Auto-check log nếu có
         if (logData != null) {
@@ -93,9 +93,7 @@ public class SubmissionServiceImplement implements SubmissionService {
             boolean isPass = checkerService.autoCheck(submission);
             if (isPass) {
                 submission.setStatus(2); // 2 = PASSED
-                log.info("Tạo submission cho accountLessonId={} với status={}", request.getAccountLessonId(), submission.getStatus());
 
-                submissionRepository.save(submission);
                 // Cập nhật hoàn thành bài học
                 if (accountLesson.getCompletedAt() == null) {
                     accountLessonService.markComplete(request.getAccountLessonId());

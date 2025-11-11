@@ -69,7 +69,7 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
 
     @Query("""
         UPDATE AccountLesson al
-        SET al.status = 0
+        SET al.status = 0, al.completedAt = null
         WHERE al.accountId = :accountId
         AND al.lessonId IN (
             SELECT l.id FROM Lesson l

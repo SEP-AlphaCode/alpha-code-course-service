@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.grpc.server;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.stub.StreamObserver;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -23,6 +24,7 @@ public class SubmissionServiceServer extends SubmissionServiceGrpc.SubmissionSer
     private final SubmissionService submissionService;
 
     @Override
+    @Transactional
     public void submitRobotLogs(Submission.RobotSubmissionRequest request, StreamObserver<Submission.RobotSubmissionResponse> responseObserver) {
         String robotId = request.getRobotId();
         String accountLessonId = request.getAccountLessonId();

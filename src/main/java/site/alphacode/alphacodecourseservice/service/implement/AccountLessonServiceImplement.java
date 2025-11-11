@@ -65,6 +65,9 @@ public class AccountLessonServiceImplement implements AccountLessonService {
                 LocalDateTime.now()
         );
 
+        if(accountLesson.getStatus() == 0){
+            accountLesson.setStatus(1); // Cập nhật trạng thái từ Chưa bắt đầu (0) sang Đang học (1)
+        }
         accountLesson.setLastUpdated(LocalDateTime.now());
         accountLessonRepository.save(accountLesson);
 

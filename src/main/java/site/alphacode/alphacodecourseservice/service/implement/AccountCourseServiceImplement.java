@@ -124,11 +124,19 @@ public class AccountCourseServiceImplement implements AccountCourseService {
 
     @Override
     @Transactional
-    @CacheEvict(value = {"account_courses", "account_course", "available_courses"}, allEntries = true)
+    @CacheEvict(value = {"account_courses", "account_course", "available_courses", "account_lessons", "account_lesson_with_lesson", "account_lesson_by_account_course"}, allEntries = true)
     public void delete(UUID id) {
         var accountCourse = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy AccountCourse với id: " + id));
+
+        // Soft delete the AccountCourse
         repository.softDeleteById(accountCourse.getId());
+
+        // Soft delete all associated AccountLessons
+        accountLessonRepository.softDeleteByAccountIdAndCourseId(accountCourse.getAccountId(), accountCourse.getCourseId());
+
+        log.info("Soft deleted AccountCourse id: {} and all associated AccountLessons for accountId: {} and courseId: {}",
+                 id, accountCourse.getAccountId(), accountCourse.getCourseId());
     }
 
     @Override

@@ -66,4 +66,17 @@ public interface AccountLessonRepository extends JpaRepository<AccountLesson, UU
         WHERE s.courseId = :courseId
     """)
     List<AccountLesson> findAllByCourseId(@Param("courseId") UUID courseId);
+
+    @Query("""
+        UPDATE AccountLesson al
+        SET al.status = 0
+        WHERE al.accountId = :accountId
+        AND al.lessonId IN (
+            SELECT l.id FROM Lesson l
+            JOIN Section s ON l.sectionId = s.id
+            WHERE s.courseId = :courseId
+        )
+    """)
+    @org.springframework.data.jpa.repository.Modifying
+    void softDeleteByAccountIdAndCourseId(@Param("accountId") UUID accountId, @Param("courseId") UUID courseId);
 }

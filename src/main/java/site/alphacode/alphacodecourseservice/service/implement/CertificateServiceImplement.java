@@ -31,7 +31,7 @@ public class CertificateServiceImplement implements CertificateService {
     public CertificateInformation getByAccountIdAndCourseId(UUID accountId, UUID courseId) {
         var certificate = certificateRepository.getByAccountIdAndCourseId(accountId, courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Certificate với accountId: " + accountId + " và courseId: " + courseId + " không tìm thấy"));
-        var course = courseRepository.findActiveCourseById(courseId).orElseThrow(()-> new RuntimeException("Course với id: " + courseId + " không tìm thấy"));
+        var course = courseRepository.findNoneDeleteCourseById(courseId).orElseThrow(()-> new RuntimeException("Course với id: " + courseId + " không tìm thấy"));
         var account = userServiceClient.getAccount(accountId.toString());
         var userFullName = account.getFullName().isEmpty() ? accountId.toString() : account.getFullName();
 

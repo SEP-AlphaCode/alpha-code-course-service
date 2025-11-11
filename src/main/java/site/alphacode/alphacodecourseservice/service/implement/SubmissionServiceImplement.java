@@ -17,6 +17,7 @@ import site.alphacode.alphacodecourseservice.mapper.SubmissionMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SubmissionRepository;
 import site.alphacode.alphacodecourseservice.service.CheckerService;
+import site.alphacode.alphacodecourseservice.service.LessonService;
 import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.service.SubmissionService;
 
@@ -32,6 +33,7 @@ public class SubmissionServiceImplement implements SubmissionService {
     private final CheckerService checkerService;
     private final AccountLessonServiceImplement accountLessonService;
     private final AccountLessonRepository accountLessonRepository;
+    private final LessonService lessonService;
 
     @Override
     @Cacheable(value = "submissionByAccountLessonId", key = "{#accountLessonId}")
@@ -80,13 +82,16 @@ public class SubmissionServiceImplement implements SubmissionService {
 
         // Auto-check log nếu có
         if (logData != null) {
+            var accountLesson = accountLessonService.getAccountLessonWithLessonById(request.getAccountLessonId()) .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
+            var lesson = lessonService.getLessonWithSolutionById(accountLesson.getLessonId());
+            if(lesson.getSolution() == null){
+                throw new BadRequestException("Bài học chưa có bài giải, không thể chấm tự động");
+            }
+
             boolean isPass = checkerService.autoCheck(submission);
             if (isPass) {
                 submission.setStatus(2); // 2 = PASSED
-
-                // Mark AccountLesson complete
-                var accountLesson = accountLessonRepository.findById(request.getAccountLessonId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
+                // Cập nhật hoàn thành bài học
                 if (accountLesson.getCompletedAt() == null) {
                     accountLessonService.markComplete(request.getAccountLessonId());
                 }

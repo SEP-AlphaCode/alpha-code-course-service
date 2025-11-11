@@ -52,7 +52,7 @@ public class SubmissionServiceImplement implements SubmissionService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "submissionByAccountLessonId", allEntries = true)
+    @CacheEvict(value = {"submissionByAccountLessonId", "enrolled_courses", "account_courses"}, allEntries = true)
     public SubmissionDto createSubmission(CreateSubmission request) {
         log.info("=== START createSubmission: accountLessonId={} ===", request.getAccountLessonId());
 

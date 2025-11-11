@@ -111,7 +111,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @CacheEvict(value = {"account_lessons", "account_lesson_with_lesson"}, allEntries = true)
+    @CacheEvict(value = {"account_lessons", "account_lesson_with_lesson", "enrolled_courses", "account_courses"}, allEntries = true)
     public void markComplete(UUID accountLessonId) {
         AccountLesson accountLesson = accountLessonRepository.findById(accountLessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài học: " + accountLessonId));

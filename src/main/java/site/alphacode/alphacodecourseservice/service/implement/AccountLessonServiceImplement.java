@@ -111,7 +111,6 @@ public class AccountLessonServiceImplement implements AccountLessonService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @CachePut(value = "account_lesson_with_lesson", key = "{#accountLessonId}")
     @CacheEvict(value = {"account_lessons", "account_lesson_with_lesson"}, allEntries = true)
     public void markComplete(UUID accountLessonId) {
         AccountLesson accountLesson = accountLessonRepository.findById(accountLessonId)

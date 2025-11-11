@@ -157,7 +157,5 @@ public class AccountLessonServiceImplement implements AccountLessonService {
 
             courseProducer.sendCourseCompletedMessage(accountCourse.getAccountId().toString(), accountCourse.getCourseId().toString(), accountCourse.getCourse().getName());
         }
-
-        AccountLessonMapper.toAccountLessonWithLesson(updated, lesson);
     }
 }

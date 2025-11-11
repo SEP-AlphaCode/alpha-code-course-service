@@ -30,34 +30,43 @@ public class CheckerServiceImplement implements CheckerService {
     }
 
     public boolean autoCheck(Submission submission) {
-        JsonNode logData = submission.getLogData(); // robot logs
+        JsonNode logData = submission.getLogData();
 
-        // Nếu log chưa có, chờ chấm tay
-        if (logData == null || !logData.has("logs")) {
+        // Chỉ chấp nhận dạng array
+        if (logData == null || !logData.isArray()) {
             submission.setStatus(4); // WAITING_FOR_REVIEW
             return false;
         }
 
-        // Lấy solution (list các {type, code})
+        ArrayNode logs = (ArrayNode) logData;
+
         JsonNode requiredActions = getLessonSolution(submission.getAccountLessonId());
         ArrayNode missingActions = objectMapper.createArrayNode();
 
-        // Tạo tập hợp các hành động đã thực hiện
         Set<String> performedSet = new HashSet<>();
-        for (JsonNode performed : logData.get("logs")) {
-            String key = performed.get("type").asText().toLowerCase() + ":" + performed.get("code").asText().toLowerCase();
-            performedSet.add(key);
+
+        for (JsonNode performed : logs) {
+            if (!performed.has("type") || !performed.has("code")) continue;
+
+            String type = performed.get("type").asText("").toLowerCase();
+            String code = performed.get("code").asText("").toLowerCase();
+
+            // code null hoặc rỗng → bỏ
+            if (code == null || code.isBlank()) continue;
+
+            performedSet.add(type + ":" + code);
         }
 
-        // Kiểm tra từng hành động yêu cầu
         for (JsonNode required : requiredActions) {
-            String key = required.get("type").asText().toLowerCase() + ":" + required.get("code").asText().toLowerCase();
+            String type = required.get("type").asText("").toLowerCase();
+            String code = required.get("code").asText("").toLowerCase();
+            String key = type + ":" + code;
+
             if (!performedSet.contains(key)) {
                 missingActions.add(required);
             }
         }
 
-        // Kết quả cuối cùng
         if (missingActions.isEmpty()) {
             submission.setStatus(2); // PASSED
             submission.setMissingActions(null);
@@ -68,6 +77,4 @@ public class CheckerServiceImplement implements CheckerService {
             return false;
         }
     }
-
-
 }

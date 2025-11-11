@@ -63,6 +63,7 @@ public class SubmissionServiceImplement implements SubmissionService {
         JsonNode logData = request.getLogData();
         String videoUrl = null;
 
+        // === Upload video nếu có ===
         if (request.getVideoFile() != null && !request.getVideoFile().isEmpty()) {
             try {
                 log.info("Uploading video file...");
@@ -80,74 +81,72 @@ public class SubmissionServiceImplement implements SubmissionService {
             }
         }
 
+        // === Tạo Submission entity ===
         log.info("Creating submission entity...");
         Submission submission = new Submission();
-
         submission.setAccountLessonId(request.getAccountLessonId());
         submission.setLogData(logData);
         submission.setVideoUrl(videoUrl);
         submission.setCreatedDate(LocalDateTime.now());
-        submission.setStatus(1); // 1 = Đã nộp
+        submission.setStatus(1); // DEFAULT: Submitted
 
-        // Auto-check log nếu có
+        // === Auto-check nếu có log – KHÔNG override status sai ===
         if (logData != null) {
             log.info("LogData present, starting auto-check...");
+
             try {
                 var accountLesson = accountLessonService.getAccountLessonWithLessonById(request.getAccountLessonId())
                         .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
+
                 log.info("Found accountLesson: lessonId={}, completedAt={}", accountLesson.getLessonId(), accountLesson.getCompletedAt());
 
                 var lesson = lessonService.getLessonWithSolutionById(accountLesson.getLessonId());
-                if(lesson.getSolution() == null){
+                if (lesson.getSolution() == null) {
                     log.warn("Lesson has no solution");
                     throw new BadRequestException("Bài học chưa có bài giải, không thể chấm tự động");
                 }
 
                 log.info("Calling checkerService.autoCheck()...");
                 boolean isPass = checkerService.autoCheck(submission);
+
                 log.info("AutoCheck result: isPass={}", isPass);
+                log.info("Submission status after autoCheck: {}", submission.getStatus());
 
+                // Nếu PASS → đánh dấu hoàn thành bài học
                 if (isPass) {
-                    submission.setStatus(2); // 2 = PASSED
-                    log.info("Submission PASSED, status set to 2");
-
-                    // Cập nhật hoàn thành bài học
                     if (accountLesson.getCompletedAt() == null) {
-                        log.info("Lesson not completed yet, calling markComplete...");
                         try {
                             accountLessonService.markComplete(request.getAccountLessonId());
                             log.info("markComplete completed successfully");
                         } catch (Exception e) {
                             log.error("Error in markComplete: {}", e.getMessage(), e);
-                            // Không throw exception để submission vẫn được save
                         }
-                    } else {
-                        log.info("Lesson already completed at: {}", accountLesson.getCompletedAt());
                     }
-                } else {
-                    submission.setStatus(3); // 3 = FAILED
-                    log.info("Submission FAILED, status set to 3");
                 }
+
             } catch (Exception e) {
                 log.error("ERROR during auto-check process: {}", e.getMessage(), e);
-                // Set status to error but still save submission
-                submission.setStatus(5); // 5 = ERROR
+                submission.setStatus(5); // ERROR
                 log.warn("Auto-check failed, submission will be saved with ERROR status");
             }
+
         } else {
-            submission.setStatus(4);
-            log.info("No logData, status set to 4 (PENDING_REVIEW)");
+            // Không có log ⇒ chấm tay
+            submission.setStatus(4); // PENDING REVIEW
+            log.info("No logData, status set to 4");
         }
 
         log.info("=== BEFORE SAVE: Tạo submission cho accountLessonId={} với status={} ===", request.getAccountLessonId(), submission.getStatus());
 
         Submission saved = submissionRepository.save(submission);
+
         log.info("=== AFTER SAVE: Submission saved with id={} ===", saved.getId());
 
         SubmissionDto result = SubmissionMapper.toDto(saved);
         log.info("=== END createSubmission: Returning SubmissionDto ===");
         return result;
     }
+
 
     @Override
     @Transactional

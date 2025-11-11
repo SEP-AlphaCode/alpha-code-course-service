@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.service.implement;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SubmissionServiceImplement implements SubmissionService {
     private final SubmissionRepository submissionRepository;
     private final S3Service s3Service;
@@ -101,6 +103,8 @@ public class SubmissionServiceImplement implements SubmissionService {
         } else {
             submission.setStatus(4);
         }
+
+        log.info("Tạo submission cho accountLessonId={} với status={}", request.getAccountLessonId(), submission.getStatus());
 
         Submission saved = submissionRepository.save(submission);
         return SubmissionMapper.toDto(saved);

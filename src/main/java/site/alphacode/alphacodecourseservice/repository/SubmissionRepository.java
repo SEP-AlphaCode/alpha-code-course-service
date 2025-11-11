@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
 
-    Optional<Submission> findTopByAccountLessonIdAndStatusOrderByCreatedDateDesc(UUID accountLessonId, int status);
+    Optional<Submission> findTopByAccountLessonIdOrderByCreatedDateDesc(UUID accountLessonId);
 
 
 }

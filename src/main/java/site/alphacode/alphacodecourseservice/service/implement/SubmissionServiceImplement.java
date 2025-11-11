@@ -42,7 +42,7 @@ public class SubmissionServiceImplement implements SubmissionService {
     @Cacheable(value = "submissionByAccountLessonId", key = "{#accountLessonId}")
     public SubmissionDto getByAccountLessonId(UUID accountLessonId) {
         var submission = submissionRepository
-                .findTopByAccountLessonIdAndStatusOrderByCreatedDateDesc(accountLessonId, 1) // status = 1 = đã nộp
+                .findTopByAccountLessonIdOrderByCreatedDateDesc(accountLessonId)
                 .orElseThrow(() -> new BadRequestException(
                         "Không tìm thấy submission với accountLessonId: " + accountLessonId
                 ));

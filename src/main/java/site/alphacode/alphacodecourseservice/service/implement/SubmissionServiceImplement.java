@@ -1,12 +1,13 @@
 package site.alphacode.alphacodecourseservice.service.implement;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
 import site.alphacode.alphacodecourseservice.dto.response.SubmissionDto;
@@ -51,8 +52,10 @@ public class SubmissionServiceImplement implements SubmissionService {
 
     @Override
     @Transactional
-    @CachePut(value = "submissionByAccountLessonId", key = "{#request.accountLessonId}")
+    @CacheEvict(value = "submissionByAccountLessonId", allEntries = true)
     public SubmissionDto createSubmission(CreateSubmission request) {
+        log.info("=== START createSubmission: accountLessonId={} ===", request.getAccountLessonId());
+
         if (request.getLogData() == null && request.getVideoFile() == null) {
             throw new BadRequestException("Phải gửi ít nhất logData hoặc videoFile");
         }
@@ -62,6 +65,7 @@ public class SubmissionServiceImplement implements SubmissionService {
 
         if (request.getVideoFile() != null && !request.getVideoFile().isEmpty()) {
             try {
+                log.info("Uploading video file...");
                 String fileKey = "submissions/" + System.currentTimeMillis() + "_" +  request.getVideoFile().getOriginalFilename();
                 videoUrl = s3Service.uploadStream(
                         request.getVideoFile().getInputStream(),
@@ -69,11 +73,14 @@ public class SubmissionServiceImplement implements SubmissionService {
                         fileKey,
                         request.getVideoFile().getContentType()
                 );
+                log.info("Video uploaded successfully: {}", videoUrl);
             } catch (IOException e) {
+                log.error("Upload video failed", e);
                 throw new RuntimeException("Upload video thất bại", e);
             }
         }
 
+        log.info("Creating submission entity...");
         Submission submission = new Submission();
 
         submission.setAccountLessonId(request.getAccountLessonId());
@@ -84,36 +91,67 @@ public class SubmissionServiceImplement implements SubmissionService {
 
         // Auto-check log nếu có
         if (logData != null) {
-            var accountLesson = accountLessonService.getAccountLessonWithLessonById(request.getAccountLessonId()) .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
-            var lesson = lessonService.getLessonWithSolutionById(accountLesson.getLessonId());
-            if(lesson.getSolution() == null){
-                throw new BadRequestException("Bài học chưa có bài giải, không thể chấm tự động");
-            }
+            log.info("LogData present, starting auto-check...");
+            try {
+                var accountLesson = accountLessonService.getAccountLessonWithLessonById(request.getAccountLessonId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy AccountLesson"));
+                log.info("Found accountLesson: lessonId={}, completedAt={}", accountLesson.getLessonId(), accountLesson.getCompletedAt());
 
-            boolean isPass = checkerService.autoCheck(submission);
-            if (isPass) {
-                submission.setStatus(2); // 2 = PASSED
-
-                // Cập nhật hoàn thành bài học
-                if (accountLesson.getCompletedAt() == null) {
-                    accountLessonService.markComplete(request.getAccountLessonId());
+                var lesson = lessonService.getLessonWithSolutionById(accountLesson.getLessonId());
+                if(lesson.getSolution() == null){
+                    log.warn("Lesson has no solution");
+                    throw new BadRequestException("Bài học chưa có bài giải, không thể chấm tự động");
                 }
-            } else {
-                submission.setStatus(3); // 3 = FAILED
+
+                log.info("Calling checkerService.autoCheck()...");
+                boolean isPass = checkerService.autoCheck(submission);
+                log.info("AutoCheck result: isPass={}", isPass);
+
+                if (isPass) {
+                    submission.setStatus(2); // 2 = PASSED
+                    log.info("Submission PASSED, status set to 2");
+
+                    // Cập nhật hoàn thành bài học
+                    if (accountLesson.getCompletedAt() == null) {
+                        log.info("Lesson not completed yet, calling markComplete...");
+                        try {
+                            accountLessonService.markComplete(request.getAccountLessonId());
+                            log.info("markComplete completed successfully");
+                        } catch (Exception e) {
+                            log.error("Error in markComplete: {}", e.getMessage(), e);
+                            // Không throw exception để submission vẫn được save
+                        }
+                    } else {
+                        log.info("Lesson already completed at: {}", accountLesson.getCompletedAt());
+                    }
+                } else {
+                    submission.setStatus(3); // 3 = FAILED
+                    log.info("Submission FAILED, status set to 3");
+                }
+            } catch (Exception e) {
+                log.error("ERROR during auto-check process: {}", e.getMessage(), e);
+                // Set status to error but still save submission
+                submission.setStatus(5); // 5 = ERROR
+                log.warn("Auto-check failed, submission will be saved with ERROR status");
             }
         } else {
             submission.setStatus(4);
+            log.info("No logData, status set to 4 (PENDING_REVIEW)");
         }
 
-        log.info("Tạo submission cho accountLessonId={} với status={}", request.getAccountLessonId(), submission.getStatus());
+        log.info("=== BEFORE SAVE: Tạo submission cho accountLessonId={} với status={} ===", request.getAccountLessonId(), submission.getStatus());
 
         Submission saved = submissionRepository.save(submission);
-        return SubmissionMapper.toDto(saved);
+        log.info("=== AFTER SAVE: Submission saved with id={} ===", saved.getId());
+
+        SubmissionDto result = SubmissionMapper.toDto(saved);
+        log.info("=== END createSubmission: Returning SubmissionDto ===");
+        return result;
     }
 
     @Override
     @Transactional
-    @CachePut(value = "submissionByAccountLessonId", key = "{#submissionId}")
+    @CacheEvict(value = "submissionByAccountLessonId", allEntries = true)
     public SubmissionDto reviewSubmission(UUID submissionId, StaffReviewRequest request) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy submission: " + submissionId));

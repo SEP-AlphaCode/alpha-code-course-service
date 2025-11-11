@@ -95,7 +95,14 @@ public class SubmissionServiceImplement implements SubmissionService {
                 submission.setStatus(2); // 2 = PASSED
                 // Cập nhật hoàn thành bài học
                 if (accountLesson.getCompletedAt() == null) {
-                    accountLessonService.markComplete(request.getAccountLessonId());
+                    try {
+                        accountLessonService.markComplete(request.getAccountLessonId());
+                    } catch (IllegalStateException e) {
+                        log.warn("Bài học đã được hoàn thành trước đó: {}", e.getMessage());
+                    } catch (Exception e) {
+                        log.error("Lỗi khi cập nhật hoàn thành bài học: {}", e.getMessage(), e);
+                        // Không throw exception, vẫn save submission
+                    }
                 }
             } else {
                 submission.setStatus(3); // 3 = FAILED

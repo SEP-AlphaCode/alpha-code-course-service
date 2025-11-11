@@ -1,6 +1,5 @@
 package site.alphacode.alphacodecourseservice.service.implement;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -9,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateAccountLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithLesson;
 import site.alphacode.alphacodecourseservice.dto.response.AccountLessonWithDuration;
@@ -109,7 +110,7 @@ public class AccountLessonServiceImplement implements AccountLessonService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @CachePut(value = "account_lesson_with_lesson", key = "{#accountLessonId}")
     @CacheEvict(value = {"account_lessons", "account_lesson_with_lesson"}, allEntries = true)
     public void markComplete(UUID accountLessonId) {

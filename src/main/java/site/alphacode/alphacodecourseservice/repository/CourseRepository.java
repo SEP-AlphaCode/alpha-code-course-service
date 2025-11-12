@@ -109,6 +109,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     WHERE c.id NOT IN (
         SELECT ac.courseId FROM AccountCourse ac WHERE ac.accountId = :accountId
     )
+        AND c.status <> 0
     ORDER BY c.createdDate DESC
     """)
     List<Course> findAvailableCourses(@Param("accountId") UUID accountId, Pageable pageable);

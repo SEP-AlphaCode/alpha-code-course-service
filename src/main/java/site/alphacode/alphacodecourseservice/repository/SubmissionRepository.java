@@ -29,6 +29,6 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     """)
     Page<SubmissionList> findSubmissionsByStatus(@Param("status") Integer status, Pageable pageable);
 
-    @Query("select s from Submission s join s.accountLesson where s.id = :id")
+    @Query("select s from Submission s join s.accountLesson ac left join ac.lesson where s.id = :id")
     Optional<Submission> findSubmissionById(@Param("id") UUID id);
 }

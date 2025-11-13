@@ -34,6 +34,9 @@ public class SubmissionMapper {
                 .accountId(submission.getAccountLesson().getAccountId())
                 .accountName(accountName)
                 .missingActions(submission.getMissingActions())
+                .lessonId(submission.getAccountLesson().getLessonId())
+                .lessonTitle(submission.getAccountLesson().getLesson().getTitle())
+                .staffComment(submission.getStaffComment())
                 .status(submission.getStatus())
                 .build();
     }

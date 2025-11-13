@@ -44,7 +44,7 @@ public class SubmissionServiceServer extends SubmissionServiceGrpc.SubmissionSer
             CreateSubmission createRequest = CreateSubmission.builder()
                     .accountLessonId(UUID.fromString(accountLessonId))
                     .logData(logData)
-                    .videoFile(null) // gRPC không truyền file
+                    .videoUrl(null) // gRPC không truyền file
                     .build();
 
             log.info("[gRPC SERVER] Calling submissionService.createSubmission for accountLessonId={}", accountLessonId);

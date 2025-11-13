@@ -44,7 +44,7 @@ public class SubmissionController {
     @PostMapping()
     @Operation(summary = "Create a new submission")
     @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
-    public SubmissionDto createSubmission(CreateSubmission createSubmission) {
+    public SubmissionDto createSubmission(@RequestBody CreateSubmission createSubmission) {
         return submissionService.createSubmission(createSubmission);
     }
 

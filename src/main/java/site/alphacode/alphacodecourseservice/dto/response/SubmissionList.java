@@ -29,4 +29,27 @@ public class SubmissionList extends BaseEntityDto implements Serializable {
     public String getStatusText() {
         return SubmissionEnum.fromCode(this.getStatus());
     }
+
+    public SubmissionList(
+            UUID id,
+            UUID accountLessonId,
+            UUID accountId,
+            String accountName,
+            UUID lessonId,
+            String lessonTitle,
+            String videoUrl,
+            java.time.LocalDateTime createdDate,
+            java.time.LocalDateTime lastUpdated,
+            Integer status
+    ) {
+        super(createdDate, lastUpdated, status);
+        this.id = id;
+        this.accountLessonId = accountLessonId;
+        this.accountId = accountId;
+        this.accountName = accountName;
+        this.lessonId = lessonId;
+        this.lessonTitle = lessonTitle;
+        this.videoUrl = videoUrl;
+    }
+
 }

@@ -8,7 +8,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.SubmissionDetail;
 import site.alphacode.alphacodecourseservice.dto.response.SubmissionDto;
+import site.alphacode.alphacodecourseservice.dto.response.SubmissionList;
 import site.alphacode.alphacodecourseservice.service.SubmissionService;
 
 import java.util.UUID;
@@ -41,5 +44,32 @@ public class SubmissionController {
             @RequestBody StaffReviewRequest request
     ) {
         return submissionService.reviewSubmission(submissionId, request);
+    }
+
+    @GetMapping("/unreviewed")
+    @Operation(summary = "Get list unreviewed submissions with pagination")
+    @PreAuthorize("hasAuthority('ROLE_Staff')")
+    public PagedResult<SubmissionList> getUnreviewedSubmissions(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return submissionService.getUnreviewedSubmissions(page, size);
+    }
+
+    @GetMapping("/failed")
+    @Operation(summary = "Get list failed submissions with pagination")
+    @PreAuthorize("hasAuthority('ROLE_Staff')")
+    public PagedResult<SubmissionList> getFailedSubmissions(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return submissionService.getFailedSubmissions(page, size);
+    }
+
+    @GetMapping("/detail/{submissionId}")
+    @Operation(summary = "Get submission detail by ID")
+    @PreAuthorize("hasAuthority('ROLE_Staff')")
+    public SubmissionDetail getSubmissionDetail(@PathVariable UUID submissionId) {
+        return submissionService.getSubmissionDetail(submissionId);
     }
 }

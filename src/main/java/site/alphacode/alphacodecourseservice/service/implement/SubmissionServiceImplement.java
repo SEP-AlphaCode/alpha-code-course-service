@@ -10,11 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
+import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
+import site.alphacode.alphacodecourseservice.dto.response.SubmissionDetail;
 import site.alphacode.alphacodecourseservice.dto.response.SubmissionDto;
+import site.alphacode.alphacodecourseservice.dto.response.SubmissionList;
 import site.alphacode.alphacodecourseservice.entity.Submission;
 import site.alphacode.alphacodecourseservice.enums.SubmissionEnum;
 import site.alphacode.alphacodecourseservice.exception.BadRequestException;
 import site.alphacode.alphacodecourseservice.exception.ResourceNotFoundException;
+import site.alphacode.alphacodecourseservice.grpc.client.UserServiceClient;
 import site.alphacode.alphacodecourseservice.mapper.SubmissionMapper;
 import site.alphacode.alphacodecourseservice.repository.AccountLessonRepository;
 import site.alphacode.alphacodecourseservice.repository.SubmissionRepository;
@@ -37,6 +41,7 @@ public class SubmissionServiceImplement implements SubmissionService {
     private final AccountLessonServiceImplement accountLessonService;
     private final AccountLessonRepository accountLessonRepository;
     private final LessonService lessonService;
+    private final UserServiceClient userServiceClient;
 
     @Override
     @Cacheable(value = "submissionByAccountLessonId", key = "{#accountLessonId}")
@@ -178,4 +183,49 @@ public class SubmissionServiceImplement implements SubmissionService {
         return SubmissionMapper.toDto(saved);
     }
 
+    @Override
+    public PagedResult<SubmissionList> getUnreviewedSubmissions(int page, int size) {
+
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+
+        var pageResult = submissionRepository.findSubmissionsByStatus(
+                SubmissionEnum.PENDING_REVIEW.getCode(), pageable);
+
+        return new PagedResult<>(pageResult);
+    }
+
+    @Override
+    public PagedResult<SubmissionList> getFailedSubmissions(int page, int size) {
+
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+
+        var pageResult = submissionRepository.findSubmissionsByStatus(
+                SubmissionEnum.FAIL_HUMAN.getCode(), pageable);
+
+        return new PagedResult<>(pageResult);
+    }
+
+    @Override
+    public SubmissionDetail getSubmissionDetail(UUID submissionId) {
+        var submission = submissionRepository.findSubmissionById(submissionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy submission: " + submissionId));
+
+        var accountLesson = submission.getAccountLesson();
+        if (accountLesson == null) {
+            throw new ResourceNotFoundException("Submission không có thông tin accountLesson");
+        }
+
+        String accountName = "Người dùng";
+        try {
+            var user = userServiceClient.getAccount(accountLesson.getAccountId().toString());
+            if (user != null) {
+                user.getFullName();
+                accountName = user.getFullName();
+            }
+        } catch (Exception e) {
+            log.warn("Không lấy được thông tin user: {}", e.getMessage());
+        }
+
+        return SubmissionMapper.toDetail(submission, accountName);
+    }
 }

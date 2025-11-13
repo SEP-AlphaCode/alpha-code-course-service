@@ -61,37 +61,18 @@ public class SubmissionServiceImplement implements SubmissionService {
     public SubmissionDto createSubmission(CreateSubmission request) {
         log.info("=== START createSubmission: accountLessonId={} ===", request.getAccountLessonId());
 
-        if (request.getLogData() == null && request.getVideoFile() == null) {
-            throw new BadRequestException("Phải gửi ít nhất logData hoặc videoFile");
+        if (request.getLogData() == null && request.getVideoUrl() == null) {
+            throw new BadRequestException("Phải gửi ít nhất logData hoặc videoURL");
         }
 
         JsonNode logData = request.getLogData();
-        String videoUrl = null;
-
-        // === Upload video nếu có ===
-        if (request.getVideoFile() != null && !request.getVideoFile().isEmpty()) {
-            try {
-                log.info("Uploading video file...");
-                String fileKey = "submissions/" + System.currentTimeMillis() + "_" +  request.getVideoFile().getOriginalFilename();
-                videoUrl = s3Service.uploadStream(
-                        request.getVideoFile().getInputStream(),
-                        request.getVideoFile().getSize(),
-                        fileKey,
-                        request.getVideoFile().getContentType()
-                );
-                log.info("Video uploaded successfully: {}", videoUrl);
-            } catch (IOException e) {
-                log.error("Upload video failed", e);
-                throw new RuntimeException("Upload video thất bại", e);
-            }
-        }
 
         // === Tạo Submission entity ===
         log.info("Creating submission entity...");
         Submission submission = new Submission();
         submission.setAccountLessonId(request.getAccountLessonId());
         submission.setLogData(logData);
-        submission.setVideoUrl(videoUrl);
+        submission.setVideoUrl(request.getVideoUrl());
         submission.setCreatedDate(LocalDateTime.now());
         submission.setStatus(1); // DEFAULT: Submitted
 

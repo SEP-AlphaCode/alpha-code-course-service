@@ -16,7 +16,8 @@ import java.util.UUID;
 @Builder
 public class CreateSubmission {
     private JsonNode logData;
-    private MultipartFile videoFile; // video.mp4
+
+    private String videoUrl;
 
     @NotNull(message = "AccountLessonId không được null")
     private UUID accountLessonId;

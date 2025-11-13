@@ -2,16 +2,15 @@ package site.alphacode.alphacodecourseservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import site.alphacode.alphacodecourseservice.dto.request.StaffReviewRequest;
 import site.alphacode.alphacodecourseservice.dto.request.create.CreateSubmission;
-import site.alphacode.alphacodecourseservice.dto.response.PagedResult;
-import site.alphacode.alphacodecourseservice.dto.response.SubmissionDetail;
-import site.alphacode.alphacodecourseservice.dto.response.SubmissionDto;
-import site.alphacode.alphacodecourseservice.dto.response.SubmissionList;
+import site.alphacode.alphacodecourseservice.dto.response.*;
+import site.alphacode.alphacodecourseservice.service.S3Service;
 import site.alphacode.alphacodecourseservice.service.SubmissionService;
 
 import java.util.UUID;
@@ -22,11 +21,24 @@ import java.util.UUID;
 @Tag(name = "Submission", description = "Submission management APIs")
 public class SubmissionController {
     private final SubmissionService submissionService;
+    private final S3Service s3Service;
 
     @GetMapping("/by-account-lesson-id/{accountLessonId}")
     @Operation(summary = "Get newest submission by account lesson ID")
     public SubmissionDto getByAccountLessonId(@PathVariable UUID accountLessonId) {
          return submissionService.getByAccountLessonId(accountLessonId);
+    }
+
+    @GetMapping("/presign")
+    @Operation(summary = "Generate S3 presigned PUT URL for direct upload (Children and Parent only)")
+    @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
+    public PresignResponse presign(
+            @RequestParam @NotBlank String filename,
+            @RequestParam(defaultValue = "video/mp4") String contentType,
+            @RequestParam(defaultValue = "lessons") String folder,
+            @RequestParam(defaultValue = "900") long expiresInSeconds
+    ) {
+        return s3Service.generatePresignUrl(filename, contentType, folder, expiresInSeconds);
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

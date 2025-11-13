@@ -19,7 +19,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     // Return a paged list of SubmissionList DTOs (joins AccountLesson and Lesson to get related data).
     @Query("""
     SELECT new site.alphacode.alphacodecourseservice.dto.response.SubmissionList(
-        s.id, s.accountLessonId, al.accountId, null, l.id, l.title, s.videoUrl
+        s.id, s.accountLessonId, al.accountId, null, l.id, l.title, s.videoUrl, s.status, s.createdDate, s.lastUpdated
     )
     FROM Submission s
     JOIN AccountLesson al ON s.accountLessonId = al.id

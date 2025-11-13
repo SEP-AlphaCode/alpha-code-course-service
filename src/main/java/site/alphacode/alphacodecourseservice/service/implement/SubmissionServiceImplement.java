@@ -141,9 +141,9 @@ public class SubmissionServiceImplement implements SubmissionService {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy submission: " + submissionId));
 
-        if (!submission.getStatus().equals(SubmissionEnum.PENDING_REVIEW.getCode())) {
-            throw new BadRequestException("Submission này không ở trạng thái cần review");
-        }
+//        if (!submission.getStatus().equals(SubmissionEnum.PENDING_REVIEW.getCode())) {
+//            throw new BadRequestException("Submission này không ở trạng thái cần review");
+//        }
 
         if (request.isApproved()) {
             submission.setStatus(SubmissionEnum.PASS_HUMAN.getCode());

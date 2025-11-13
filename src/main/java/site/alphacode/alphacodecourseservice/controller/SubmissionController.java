@@ -41,7 +41,7 @@ public class SubmissionController {
         return s3Service.generatePresignUrl(filename, contentType, folder, expiresInSeconds);
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping()
     @Operation(summary = "Create a new submission")
     @PreAuthorize("hasAnyAuthority('ROLE_Parent', 'ROLE_Children')")
     public SubmissionDto createSubmission(CreateSubmission createSubmission) {

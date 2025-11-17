@@ -102,4 +102,6 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     int countByCourseId(@Param("courseId") UUID courseId);
 
     Optional<Lesson> findByTitleAndSectionId(String title, UUID sectionId);
+
+    Optional<Lesson> findBySlugAndSectionId(String slug, UUID sectionId);
 }

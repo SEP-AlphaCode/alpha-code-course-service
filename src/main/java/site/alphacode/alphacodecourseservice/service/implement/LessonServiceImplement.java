@@ -121,7 +121,7 @@ public class LessonServiceImplement implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Section với id " + createLesson.getSectionId() + " không tồn tại."));
 
         String slug = SlugHelper.toSlug(createLesson.getTitle());
-        lessonRepository.findBySlug(slug).ifPresent(l -> { throw new ConflictException("Bài học với tên này đã tồn tại."); });
+        lessonRepository.findBySlugAndSectionId(slug, createLesson.getSectionId()).ifPresent(l -> { throw new ConflictException("Bài học với slug này đã tồn tại."); });
 
         Course course = section.getCourse();
 

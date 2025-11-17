@@ -30,7 +30,7 @@ public class Lesson extends BaseEntity {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "slug", nullable = false, unique = true, length = 255)
+    @Column(name = "slug", nullable = false, length = 255)
     private String slug;
 
     @Column(name = "content", columnDefinition = "TEXT", nullable = false)

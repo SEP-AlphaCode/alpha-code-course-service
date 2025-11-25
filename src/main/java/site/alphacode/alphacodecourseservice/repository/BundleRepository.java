@@ -19,6 +19,17 @@ public interface BundleRepository extends JpaRepository<Bundle, UUID> {
     @Query("SELECT b FROM Bundle b WHERE b.id = :id AND b.status <> 0")
     Optional<Bundle> findNoneDeleteById(@Param("id") UUID id);
 
+    @Query("""
+    SELECT DISTINCT b
+    FROM Bundle b
+    LEFT JOIN FETCH b.courseBundles cb
+    LEFT JOIN FETCH cb.course c
+    WHERE b.id = :id
+      AND b.status <> 0
+    """)
+    Optional<Bundle> findActiveBundleWithCourses(@Param("id") UUID id);
+
+
     @Query("SELECT b FROM Bundle b WHERE b.id = :id AND b.status = :status")
     Optional<Bundle> findByIdAndStatus(@Param("id") UUID id, @Param("status") Integer status);
 

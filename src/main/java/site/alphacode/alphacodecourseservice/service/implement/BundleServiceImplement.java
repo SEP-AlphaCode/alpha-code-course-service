@@ -43,6 +43,14 @@ public class BundleServiceImplement implements BundleService {
     }
 
     @Override
+    public BundleDto getActiveBundleWithCourses(UUID id) {
+        var bundle = bundleRepository.findActiveBundleWithCourses(id).orElseThrow(
+                () -> new BadRequestException("Gói không tồn tại")
+        );
+        return BundleMapper.toDto(bundle);
+    }
+
+    @Override
     @Cacheable(value = "active_bundle", key = "{#id}")
     public BundleDto getActiveById(UUID id){
         var bundle = bundleRepository.findByIdAndStatus(id, 1).orElseThrow(

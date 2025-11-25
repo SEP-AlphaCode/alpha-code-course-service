@@ -17,4 +17,5 @@ public interface BundleService {
     BundleDto update(UUID id, UpdateBundle updateBundle);
     BundleDto patch(UUID id, PatchBundle patchBundle);
     void delete(UUID id);
+    BundleDto getActiveBundleWithCourses(UUID id);
 }

@@ -83,7 +83,7 @@ public class CourseServiceServer extends CourseServiceGrpc.CourseServiceImplBase
         try{
             UUID id = UUID.fromString(requestId);
 
-            var bundleDto = bundleService.getById(id);
+            var bundleDto = bundleService.getActiveBundleWithCourses(id);
             if(bundleDto == null){
                 log.warn("Bundle not found for ID: {}", requestId);
                 responseObserver.onError(Status.NOT_FOUND

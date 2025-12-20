@@ -3,6 +3,7 @@ package site.alphacode.alphacodecourseservice.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import site.alphacode.alphacodecourseservice.entity.Lesson;
@@ -104,4 +105,8 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
     Optional<Lesson> findByTitleAndSectionId(String title, UUID sectionId);
 
     Optional<Lesson> findBySlugAndSectionId(String slug, UUID sectionId);
+
+    @Modifying
+    @Query("UPDATE Lesson l SET l.status = 0 WHERE l.id = :id")
+    void softDelete(UUID id);
 }

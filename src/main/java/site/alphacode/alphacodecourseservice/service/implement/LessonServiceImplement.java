@@ -343,7 +343,7 @@ public class LessonServiceImplement implements LessonService {
 
         accountLessonRepository.deleteAllByLessonId(existing.getId());
 
-        lessonRepository.delete(existing);
+        lessonRepository.softDelete(existing.getId());
 
         // Shift down orderNumber for lessons in the same section that were after the deleted lesson
         var lessonsInSection = lessonRepository.findAllNoneDeletedBySectionIdOrderByOrderNumberAsc(sectionId);

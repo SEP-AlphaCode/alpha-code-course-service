@@ -12,7 +12,7 @@ COPY src ./src
 COPY src/main/proto ./src/main/proto
 
 # Build + generate gRPC classes
-RUN mvn clean package -DskipTests
+RUN mvn clean test package
 
 # Stage 2: Run ứng dụng
 FROM eclipse-temurin:24-jdk AS runtime
